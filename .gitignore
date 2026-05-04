@@ -22,3 +22,31 @@
 
 # Specs and planning artifacts (remove to track in git)
 /docs/specs/
+
+# Next.js
+/.next/
+/out/
+/build
+
+# Dependencies
+/node_modules/
+
+# Environment variables
+.env.local
+.env*.local
+
+# SQLite database (local only)
+local.db
+*.db
+
+# Misc
+.DS_Store
+*.pem
+/coverage
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
