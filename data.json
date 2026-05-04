@@ -1,0 +1,310 @@
+{
+  "project": {
+    "name": "Ecosistema de Gestión Jurídica Digital",
+    "subtitle": "Informe de Avance — Secretaría General de Medellín",
+    "overallProgress": 30,
+    "lastUpdated": "2026-02-13",
+    "logo": "recursos/logo_proyecto.png",
+    "backgrounds": {
+      "primary": "recursos/bg_01.png",
+      "secondary": "recursos/bg_02.png"
+    }
+  },
+  "categories": [
+    {
+      "id": "automatizacion",
+      "name": "Gestión de Notificaciones",
+      "description": "Flujo de automatización, clasificación y extracción de notificaciones judiciales",
+      "color": "#3b82f6",
+      "icon": "⚙️",
+      "activities": [
+        {
+          "id": "hu-1",
+          "name": "HU-1 Gestión de Notificaciones",
+          "progress": 100,
+          "status": "completado",
+          "phase": "Corto plazo",
+          "description": "La HU de Gestión de Notificaciones evolucionó de un proceso operativo básico a un mecanismo controlado, auditable y gobernado por reglas, alineado con necesidades jurídicas reales y con capacidad de escalar.",
+          "achievements": [
+            "Control sistémico de buzones (de manual a sistémico)",
+            "Trazabilidad auditable de estados de notificaciones",
+            "Formación lógica de reglas de negocio",
+            "Mecanismo controlado y gobernado por reglas"
+          ],
+          "nextSteps": [
+            "Estabilización y soporte continuo",
+            "Integración con HU-7 para envío de notificaciones",
+            "Escalamiento a nuevos tipos de procesos"
+          ],
+          "video": "recursos/videos/HU1 Gestion de notificaciones.mp4"
+        },
+        {
+          "id": "hu-2",
+          "name": "HU-2 Clasificación Automática",
+          "progress": 100,
+          "status": "completado",
+          "phase": "Corto plazo",
+          "description": "Se habilitó la transición institucional desde gestión documental manual hacia un modelo de reglas estructurado con automatización inteligente.",
+          "achievements": [
+            "Clasificación automática basada en reglas estandarizadas",
+            "Lógica funcional del sistema implementada",
+            "Clasificación institucional de documentos",
+            "Base técnica para analítica jurídica avanzada"
+          ],
+          "nextSteps": [
+            "Optimización de reglas de clasificación",
+            "Integración con analítica avanzada",
+            "Expansión a nuevas categorías documentales"
+          ],
+          "video": "recursos/videos/HU 2 Clasificacion Automatica.mp4"
+        },
+        {
+          "id": "hu-3",
+          "name": "HU-3 Extracción de Texto (ETL)",
+          "progress": 100,
+          "status": "completado",
+          "phase": "Corto plazo",
+          "description": "Transformación de documentos no estructurados en información procesable, habilitando automatización, trazabilidad y analítica jurídica avanzada.",
+          "achievements": [
+            "Texto extraído y normalizado para análisis",
+            "Clasificación y validación automática de documentos",
+            "Procesamiento de documentos no estructurados",
+            "Pipeline ETL funcional integrado"
+          ],
+          "nextSteps": [
+            "Integración con modelos de IA",
+            "Expansión a nuevos tipos documentales",
+            "Conexión con lago de información"
+          ],
+          "video": "recursos/videos/HU 3 Extraccion de texto (ETL).mp4"
+        },
+        {
+          "id": "hu-7",
+          "name": "HU-7 Conciliaciones y Procesos Judiciales",
+          "progress": 80,
+          "status": "en_progreso",
+          "phase": "Corto plazo",
+          "description": "Fase de estructuración y consolidación con avance conceptual claro. Entrega proyectada para pruebas de usuario final el 16 de febrero de 2026.",
+          "achievements": [
+            "Estructuración y consolidación al 80%",
+            "Avance conceptual claro definido",
+            "Flujos en etapa de pruebas",
+            "Componentes tutelas, MASC y procesos judiciales"
+          ],
+          "nextSteps": [
+            "Pruebas de usuario final (16 feb 2026)",
+            "Entrega de flujos completos",
+            "Implementación de automatización integral"
+          ]
+        },
+        {
+          "id": "hu-4",
+          "name": "HU-4 Integración de Asignación",
+          "progress": 50,
+          "status": "en_progreso",
+          "phase": "Mediano plazo",
+          "description": "Configuraciones para asignación automática, adecuaciones técnicas para desligar Helena del usuario de red y configuraciones para salida a productivo.",
+          "achievements": [
+            "Asignación automática uno a uno configurada",
+            "Adecuaciones técnicas de Helena completadas",
+            "Modelo para nuevos módulos de procesos",
+            "Configuración de querellas y procesos penales"
+          ],
+          "nextSteps": [
+            "Validación con usuario final",
+            "Salida a productivo querellas y procesos penales",
+            "Gestión de procesos ambientales y similares"
+          ],
+          "video": "recursos/videos/Integracion con Helena.mp4"
+        }
+      ]
+    },
+    {
+      "id": "visor360",
+      "name": "Automatización & Desarrollo",
+      "description": "Automatización documental para el cumplimiento de fallos y revisión de decretos presupuestales",
+      "color": "#7c3aed",
+      "icon": "🔭",
+      "activities": [
+        {
+          "id": "cumplimiento-fallos",
+          "name": "Cumplimiento de Fallos Judiciales",
+          "progress": 12,
+          "status": "en_progreso",
+          "phase": "Corto plazo",
+          "description": "Proyecto en fase inicial de ejecución (arranque técnico), con avance aproximado del 10-15% respecto al objetivo de salida a productivo en agosto 2026.",
+          "achievements": [
+            "Caso de negocio construido",
+            "Prototipos y flujo de trabajo definidos",
+            "Configuración de infraestructura TI",
+            "Socialización de requerimientos completada",
+            "Inicio del desarrollo de formularios"
+          ],
+          "nextSteps": [
+            "Primera reunión de seguimiento (16-20 feb 2026)",
+            "Socialización final del proyecto (mayo 2026)",
+            "Salida a productivo (agosto 2026)",
+            "Evaluación de impacto en cronograma"
+          ]
+        },
+        {
+          "id": "migracion-hermes",
+          "name": "Migración Hermes",
+          "progress": 20,
+          "status": "en_progreso",
+          "phase": "Corto plazo",
+          "description": "Contextualización al equipo de procesos de la dinámica jurídica de la Subsecretaría de Prevención con reestructuración de TS.",
+          "achievements": [
+            "Contextualización del equipo de procesos completada",
+            "Lineamientos para depurar TS recibidos",
+            "Reestructuración de TS prioritarias",
+            "Inicio de ruta para caso priorizado"
+          ],
+          "nextSteps": [
+            "Caso de negocio para TS-Revisión de actos administrativos",
+            "Construcción de prototipos Visor 360",
+            "Flujo de trabajo para desarrollo",
+            "Extensión a demás TS definidas"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "interoperabilidad",
+      "name": "Interoperabilidad",
+      "description": "Articulación con la Rama Judicial para integración de sistemas y notificaciones",
+      "color": "#06b6d4",
+      "icon": "🔗",
+      "activities": [
+        {
+          "id": "rama-judicial",
+          "name": "Integración Rama Judicial",
+          "progress": 20,
+          "status": "en_progreso",
+          "phase": "Corto plazo",
+          "description": "Levantamiento de información y articulaciones frente a las necesidades del proyecto, con oficialización de carta de intención.",
+          "achievements": [
+            "Espacios de socialización y experiencias realizados",
+            "Carta de intención oficializada y radicada",
+            "Identificación de articulaciones necesarias",
+            "Rutas de integración definidas"
+          ],
+          "nextSteps": [
+            "Convenio para recepción estructurada de notificaciones",
+            "Integración Helena - SAMAI (HU-7)",
+            "Integración RAMA → Helena (actuaciones)",
+            "Consulta de actuaciones Helena → RAMA"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "analitica",
+      "name": "Analítica de Datos",
+      "description": "Desarrollo de modelos de datos y lago de información para reportes estratégicos y operativos",
+      "color": "#8b5cf6",
+      "icon": "📊",
+      "activities": [
+        {
+          "id": "lago-informacion",
+          "name": "Modelos de Datos / Lago de Información",
+          "progress": 45,
+          "status": "en_progreso",
+          "phase": "Corto plazo",
+          "description": "Base técnica construida y probada. Falta integración estructural y automatización completa para consolidar como solución institucional.",
+          "achievements": [
+            "Modelos de datos definidos y formalizados con Territorio Inteligente",
+            "Robot de automatización de formato desarrollado",
+            "Cargue de datos con pruebas exitosas",
+            "Reportes básicos diseñados localmente"
+          ],
+          "nextSteps": [
+            "Integración al lago de datos para publicación de reportes",
+            "Extracción automática de información (vista Helena)",
+            "Carga de nuevos conjuntos de datos (sentencias, litigio)",
+            "Integraciones adicionales de información jurídica"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gestion-documental",
+      "name": "Gestión Documental",
+      "description": "Recomendaciones para conformar el expediente digital en articulación con Contrato CES",
+      "color": "#64748b",
+      "icon": "📁",
+      "activities": [
+        {
+          "id": "expediente-digital",
+          "name": "Expediente Digital",
+          "progress": 20,
+          "status": "en_progreso",
+          "phase": "Corto plazo",
+          "description": "Reuniones con archivo central para lineamientos del Distrito. Documentos con recomendaciones consolidados para migración de repositorios.",
+          "achievements": [
+            "Lineamientos del Distrito conocidos",
+            "Recomendaciones de metadatos consolidadas",
+            "Formatos y tipos documentales definidos",
+            "Espacios de gestión del cambio cultural realizados"
+          ],
+          "nextSteps": [
+            "Migración de repositorios documentales",
+            "Implementación de expediente digital según alcances",
+            "Cambio cultural en gestión documental",
+            "Responsabilización de generadores documentales"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inteligencia-artificial",
+      "name": "Inteligencia Artificial",
+      "description": "Incorporación de IA y gestión del conocimiento con la biblioteca virtual Astrea",
+      "color": "#ec4899",
+      "icon": "🤖",
+      "activities": [
+        {
+          "id": "astrea",
+          "name": "Astrea — IA para Gestión Jurídica",
+          "progress": 0,
+          "status": "pendiente",
+          "phase": "Por definir",
+          "description": "Frente de trabajo a incorporar bajo el contexto del uso de IA y las posibilidades de potenciar el proceso con gestión del conocimiento. Alerta temprana levantada por Secretaría de Innovación Digital.",
+          "achievements": [
+            "Frente de trabajo identificado y priorizado",
+            "Alerta temprana sobre apropiación de IA levantada"
+          ],
+          "nextSteps": [
+            "Definición de alcance y cronograma",
+            "Evaluación de capacidades de IA aplicables",
+            "Integración con biblioteca virtual Astrea",
+            "Plan de apropiación tecnológica"
+          ]
+        }
+      ]
+    }
+  ],
+  "config": {
+    "theme": {
+      "primary": "#0f172a",
+      "secondary": "#1e293b",
+      "accent": "#3b82f6",
+      "text": "#f8fafc",
+      "textMuted": "#94a3b8",
+      "surface": "rgba(30, 41, 59, 0.6)",
+      "border": "rgba(148, 163, 184, 0.15)",
+      "gradientStart": "#0f172a",
+      "gradientEnd": "#1a1a2e"
+    },
+    "particles": {
+      "enabled": true,
+      "density": 50,
+      "speed": 0.3,
+      "connectionDistance": 150
+    },
+    "animations": {
+      "speed": 1.0,
+      "staggerDelay": 0.1
+    }
+  }
+}

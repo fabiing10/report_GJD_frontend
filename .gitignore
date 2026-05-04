@@ -1,0 +1,24 @@
+# AI Framework - Minimal .gitignore
+# Only framework-specific rules. Add your project rules below.
+
+/.claude/*
+!/.claude/rules/
+/.claude/rules/.manifest-checksums
+/CLAUDE.md
+/hooks/*.db
+/hooks/__pycache__/
+
+# Ralph orchestrator (operational, per-objective)
+/.ralph/
+
+# Deep research artifacts (per-investigation)
+/.research/
+
+# Brainstorming session files (mockups, server state)
+/.brainstorm/
+
+# Visual companion session files (frontend-design mockups)
+/.visual-companion/
+
+# Specs and planning artifacts (remove to track in git)
+/docs/specs/
