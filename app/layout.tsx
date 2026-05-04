@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Inter_Tight } from 'next/font/google'
 import './globals.css'
+import { ModoPresentacionProvider } from '@/components/presentacion/ModoPresentacionProvider'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -19,11 +20,15 @@ export const metadata: Metadata = {
   description: 'Informe de Avance — Secretaría General de Medellín',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="es" className={`${inter.variable} ${interTight.variable}`}>
       <body className="bg-[#0A1228] text-[#F8FAFC] antialiased min-h-screen">
-        {children}
+        <ModoPresentacionProvider>{children}</ModoPresentacionProvider>
       </body>
     </html>
   )

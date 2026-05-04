@@ -34,11 +34,8 @@ function getDb(): Database.Database {
 }
 
 // Normaliza booleanos SQLite (0/1 → boolean)
-function normalizeBool<T extends Record<string, unknown>>(
-  row: T,
-  ...keys: (keyof T)[]
-): T {
-  const result = { ...row }
+function normalizeBool<T>(row: T, ...keys: (keyof T)[]): T {
+  const result = { ...row } as T
   for (const key of keys) {
     result[key] = Boolean(result[key]) as T[typeof key]
   }
@@ -57,7 +54,7 @@ export class SQLiteDataClient implements DataClient {
 
     if (!informeRow) return null
     const informe = normalizeBool(
-      informeRow as unknown as InformeConRelaciones,
+      informeRow as unknown as Omit<InformeConRelaciones, 'componentes'>,
       'is_active'
     )
 
