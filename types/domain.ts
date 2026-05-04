@@ -46,6 +46,9 @@ export interface Proyecto {
   plazo: PlazoEnum
   estado: EstadoEnum
   avance: number
+  avance_corto: number | null
+  avance_mediano: number | null
+  avance_largo: number | null
   responsable: string | null
   fecha_entrega: string | null
   fecha_entrega_texto: string | null
@@ -58,6 +61,7 @@ export interface ProyectoLogro {
   id: string
   proyecto_id: string
   texto: string
+  plazo: PlazoEnum
   orden: number
 }
 
@@ -65,6 +69,7 @@ export interface ProyectoProximoPaso {
   id: string
   proyecto_id: string
   texto: string
+  plazo: PlazoEnum
   orden: number
 }
 
@@ -105,10 +110,17 @@ export interface InformeConRelaciones extends InformeConAvance {
   componentes: ComponenteConProyectos[]
 }
 
-// Tipo para mutations del admin (futuro)
+// Tipos para mutations del admin
 export type ProyectoInput = Omit<Proyecto, 'id' | 'created_at' | 'updated_at'>
-export type ComponenteInput = Omit<
-  Componente,
-  'id' | 'created_at' | 'updated_at'
->
+export type ComponenteInput = Omit<Componente, 'id' | 'created_at' | 'updated_at'>
 export type InformeInput = Omit<Informe, 'id' | 'created_at' | 'updated_at'>
+
+export interface LogroInput {
+  texto: string
+  plazo: PlazoEnum
+}
+
+export interface PasoInput {
+  texto: string
+  plazo: PlazoEnum
+}

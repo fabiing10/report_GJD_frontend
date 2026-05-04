@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Inter_Tight } from 'next/font/google'
 import './globals.css'
+import { Toaster } from 'sonner'
 import { ModoPresentacionProvider } from '@/components/presentacion/ModoPresentacionProvider'
 
 const inter = Inter({
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="es" className={`${inter.variable} ${interTight.variable}`}>
       <body className="bg-[#0A1228] text-[#F8FAFC] antialiased min-h-screen">
         <ModoPresentacionProvider>{children}</ModoPresentacionProvider>
+        <Toaster theme="dark" position="top-right" richColors />
       </body>
     </html>
   )

@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/presentacion/Breadcrumbs'
 import { NavegacionProyectos } from '@/components/presentacion/NavegacionProyectos'
 import { RecursoVisual } from '@/components/presentacion/RecursoVisual'
 import { PaginadorPuntos } from '@/components/presentacion/PaginadorPuntos'
+import { ActividadesTabs } from '@/components/presentacion/ActividadesTabs'
 
 interface Props {
   params: Promise<{ componenteSlug: string; proyectoSlug: string }>
@@ -18,9 +19,7 @@ export default async function ProyectoPage({ params }: Props) {
   const componente = await client.getComponente(componenteSlug)
   if (!componente) notFound()
 
-  const proyectoIndex = componente.proyectos.findIndex(
-    (p) => p.slug === proyectoSlug
-  )
+  const proyectoIndex = componente.proyectos.findIndex((p) => p.slug === proyectoSlug)
   if (proyectoIndex === -1) notFound()
 
   const proyecto = componente.proyectos[proyectoIndex]!
@@ -44,13 +43,11 @@ export default async function ProyectoPage({ params }: Props) {
         ]}
       />
 
+      {/* Detalle del proyecto — 3 columnas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+        {/* Izq: ring + meta */}
         <div className="flex flex-col items-center gap-4 pt-4">
-          <ProgressRing
-            value={proyecto.avance}
-            color={componente.color_hex}
-            size="lg"
-          />
+          <ProgressRing value={proyecto.avance} color={componente.color_hex} size="lg" />
           <EstadoBadge estado={proyecto.estado} />
           <PlazoBadge plazo={proyecto.plazo} />
           {proyecto.responsable && (
@@ -65,12 +62,10 @@ export default async function ProyectoPage({ params }: Props) {
           )}
         </div>
 
+        {/* Centro: logros */}
         <div
           className="rounded-2xl p-5 border"
-          style={{
-            background: 'var(--color-surface-card)',
-            borderColor: 'var(--color-surface-border)',
-          }}
+          style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-6 rounded-full bg-[var(--color-alcaldia-naranja)]" />
@@ -82,29 +77,20 @@ export default async function ProyectoPage({ params }: Props) {
             {proyecto.logros.length > 0 ? (
               proyecto.logros.map((l) => (
                 <li key={l.id} className="flex gap-2.5">
-                  <Check
-                    size={14}
-                    className="shrink-0 mt-0.5 text-[var(--color-estado-completado)]"
-                  />
-                  <span className="text-xs text-[var(--color-text-secondary)]">
-                    {l.texto}
-                  </span>
+                  <Check size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-completado)]" />
+                  <span className="text-sm text-[var(--color-text-secondary)]">{l.texto}</span>
                 </li>
               ))
             ) : (
-              <li className="text-xs text-[var(--color-text-muted)] italic">
-                Sin logros registrados
-              </li>
+              <li className="text-sm text-[var(--color-text-muted)] italic">Sin logros registrados</li>
             )}
           </ul>
         </div>
 
+        {/* Der: próximos pasos */}
         <div
           className="rounded-2xl p-5 border"
-          style={{
-            background: 'var(--color-surface-card)',
-            borderColor: 'var(--color-surface-border)',
-          }}
+          style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
         >
           <div className="flex items-center gap-3 mb-4">
             <div className="w-1 h-6 rounded-full bg-[var(--color-estado-en-progreso)]" />
@@ -116,19 +102,12 @@ export default async function ProyectoPage({ params }: Props) {
             {proyecto.proximos_pasos.length > 0 ? (
               proyecto.proximos_pasos.map((p) => (
                 <li key={p.id} className="flex gap-2.5">
-                  <ArrowRight
-                    size={14}
-                    className="shrink-0 mt-0.5 text-[var(--color-estado-en-progreso)]"
-                  />
-                  <span className="text-xs text-[var(--color-text-secondary)]">
-                    {p.texto}
-                  </span>
+                  <ArrowRight size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-en-progreso)]" />
+                  <span className="text-sm text-[var(--color-text-secondary)]">{p.texto}</span>
                 </li>
               ))
             ) : (
-              <li className="text-xs text-[var(--color-text-muted)] italic">
-                Sin pasos registrados
-              </li>
+              <li className="text-sm text-[var(--color-text-muted)] italic">Sin pasos registrados</li>
             )}
           </ul>
         </div>
@@ -136,11 +115,16 @@ export default async function ProyectoPage({ params }: Props) {
 
       <RecursoVisual recursos={proyecto.recursos} />
 
-      <NavegacionProyectos
-        prev={prev}
-        next={next}
-        componenteSlug={componenteSlug}
+      <ActividadesTabs
+        logros={proyecto.logros}
+        proximos_pasos={proyecto.proximos_pasos}
+        avance_corto={proyecto.avance_corto}
+        avance_mediano={proyecto.avance_mediano}
+        avance_largo={proyecto.avance_largo}
+        colorHex={componente.color_hex}
       />
+
+      <NavegacionProyectos prev={prev} next={next} componenteSlug={componenteSlug} />
 
       <div className="flex justify-center mt-6">
         <PaginadorPuntos

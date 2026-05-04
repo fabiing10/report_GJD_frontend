@@ -135,9 +135,7 @@ export function TimelineSVG({ componentes }: TimelineSVGProps) {
                       strokeWidth="2"
                       opacity={proyecto.estado === 'no_iniciado' ? 0.4 : 1}
                     />
-                    <title>
-                      {proyecto.nombre} — {Math.round(proyecto.avance)}%
-                    </title>
+                    <title>{`${proyecto.nombre} — ${Math.round(proyecto.avance)}%`}</title>
                   </g>
                 )
               })}

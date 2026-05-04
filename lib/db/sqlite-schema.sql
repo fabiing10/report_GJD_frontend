@@ -1,5 +1,5 @@
 -- lib/db/sqlite-schema.sql
--- Equivalente al spec §4 con sintaxis SQLite (TEXT CHECK en lugar de ENUM nativo)
+-- Run via seed.ts which drops all tables first for clean migration
 
 CREATE TABLE IF NOT EXISTS informes (
   id TEXT PRIMARY KEY,
@@ -40,6 +40,9 @@ CREATE TABLE IF NOT EXISTS proyectos (
   estado TEXT NOT NULL DEFAULT 'no_iniciado'
     CHECK (estado IN ('completado', 'en_progreso', 'no_iniciado', 'refinamiento', 'bloqueado')),
   avance REAL NOT NULL DEFAULT 0,
+  avance_corto REAL,
+  avance_mediano REAL,
+  avance_largo REAL,
   responsable TEXT,
   fecha_entrega TEXT,
   fecha_entrega_texto TEXT,
@@ -53,6 +56,7 @@ CREATE TABLE IF NOT EXISTS proyecto_logros (
   id TEXT PRIMARY KEY,
   proyecto_id TEXT NOT NULL REFERENCES proyectos(id) ON DELETE CASCADE,
   texto TEXT NOT NULL,
+  plazo TEXT NOT NULL DEFAULT 'corto' CHECK (plazo IN ('corto', 'mediano', 'largo')),
   orden INTEGER NOT NULL DEFAULT 0
 );
 
@@ -60,6 +64,7 @@ CREATE TABLE IF NOT EXISTS proyecto_proximos_pasos (
   id TEXT PRIMARY KEY,
   proyecto_id TEXT NOT NULL REFERENCES proyectos(id) ON DELETE CASCADE,
   texto TEXT NOT NULL,
+  plazo TEXT NOT NULL DEFAULT 'corto' CHECK (plazo IN ('corto', 'mediano', 'largo')),
   orden INTEGER NOT NULL DEFAULT 0
 );
 
@@ -74,7 +79,7 @@ CREATE TABLE IF NOT EXISTS proyecto_recursos (
   orden INTEGER NOT NULL DEFAULT 0
 );
 
--- Vistas (equivalentes a las del spec)
+-- Vistas
 CREATE VIEW IF NOT EXISTS v_componentes_con_avance AS
 SELECT
   c.*,

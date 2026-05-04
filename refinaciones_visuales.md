@@ -1,0 +1,8 @@
+A continuacion vamos a realizar unas refinaciones y vamos a enfocarnos en desarrollar rapidamente estas features o refinaciones sobre el frontend y la experiencia.
+
+1. En la pantalla principal no es necesario tener el menu superior.
+2. Es importante tener controles que permitan subir el tamaño tanto de fuente, proporcion de botones y en general hacer un zoom estrategico que reajuste los componentes en dimensiones correctas, sin desbordes, ni sobremontar componentes, simplemente que se vea mas compacto segun la resolucion de la pantalla y por defecto apliquemos un buen estandar para que no se vea todo tan pequeño.
+3. Incluyamos un menu lateral en donde podemos volver al inicio, ver linea de tiempo, componentes, la navegacion no la quiero delegar a ser un espacio superior en el header.
+4. En cada linea  estrategica me parece clave poner los items tal como estan ahorita que serian proyectos especificos o actividades claves. pero es importante  posicionar en la pantalla interna de cada item de proyecto corto mediano y largo plazo y que se puedan ver clasificadas las actividades por cada etapa. es decir necesito clasificar las actividades en corto mediano y largo plazo y que cada una se vea su avance actual o proyectado.
+
+5. Es importante dentro de cada proyecto,  y dentro de cada actividad clave de la linea estrategica organizar todo en la linea de tiempo de corto, mediano y largo plazo. esto para tener mayor trazabilidad y yo ya meencargo de organizar las actividades en ese ciclo

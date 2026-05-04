@@ -1,0 +1,34 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+
+interface AdminTopbarProps {
+  email?: string
+}
+
+export function AdminTopbar({ email }: AdminTopbarProps) {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/auth', { method: 'DELETE' })
+    toast.success('Sesión cerrada')
+    router.push('/admin/login')
+    router.refresh()
+  }
+
+  return (
+    <header
+      className="h-12 flex items-center justify-between px-6 border-b shrink-0"
+      style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-surface-border)' }}
+    >
+      <p className="text-xs text-[var(--color-text-muted)]">{email ?? ''}</p>
+      <Button variant="ghost" size="sm" onClick={handleLogout} className="text-xs gap-1.5">
+        <LogOut size={12} />
+        Cerrar sesión
+      </Button>
+    </header>
+  )
+}

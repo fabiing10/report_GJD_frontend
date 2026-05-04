@@ -1,62 +1,120 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Maximize, Minus, Plus } from 'lucide-react'
+import { Maximize, Minus, Plus, RotateCcw } from 'lucide-react'
 import { formatFecha } from '@/lib/utils'
 
 interface FooterProps {
   fechaCorte: string
   onPresentar: () => void
+  sidebarWidth?: number
 }
 
-export function Footer({ fechaCorte, onPresentar }: FooterProps) {
+function getDefaultZoom(): number {
+  const saved = localStorage.getItem('gjd-zoom')
+  if (saved) return Number(saved)
+  const w = window.innerWidth
+  if (w >= 1920) return 110
+  if (w >= 1440) return 100
+  if (w >= 1280) return 90
+  return 80
+}
+
+function applyZoom(value: number) {
+  document.documentElement.style.zoom = `${value}%`
+  localStorage.setItem('gjd-zoom', String(value))
+}
+
+export function Footer({ fechaCorte, onPresentar, sidebarWidth = 0 }: FooterProps) {
   const [zoom, setZoom] = useState(100)
 
   useEffect(() => {
-    const saved = localStorage.getItem('gjd-zoom')
-    if (saved) setZoom(Number(saved))
+    const z = getDefaultZoom()
+    setZoom(z)
+    applyZoom(z)
   }, [])
 
+  // Keyboard shortcuts: Ctrl/Cmd + = / -
   useEffect(() => {
-    const main = document.querySelector('main')
-    if (main) (main as HTMLElement).style.transform = `scale(${zoom / 100})`
-  }, [zoom])
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return
+      if (e.key === '=' || e.key === '+') {
+        e.preventDefault()
+        setZoom(prev => { const next = Math.min(160, prev + 10); applyZoom(next); return next })
+      }
+      if (e.key === '-') {
+        e.preventDefault()
+        setZoom(prev => { const next = Math.max(60, prev - 10); applyZoom(next); return next })
+      }
+      if (e.key === '0') {
+        e.preventDefault()
+        const def = 100
+        setZoom(def); applyZoom(def)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
-  const setZoomValue = (v: number) => {
-    const clamped = Math.min(150, Math.max(60, v))
-    setZoom(clamped)
-    localStorage.setItem('gjd-zoom', String(clamped))
+  const changeZoom = (delta: number) => {
+    setZoom(prev => {
+      const next = Math.min(160, Math.max(60, prev + delta))
+      applyZoom(next)
+      return next
+    })
+  }
+
+  const resetZoom = () => {
+    setZoom(100)
+    applyZoom(100)
   }
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-20 flex items-center justify-between px-6 py-3"
+      className="fixed bottom-0 right-0 z-20 flex items-center justify-between px-5 py-2.5"
       style={{
-        background: 'rgba(10,18,40,0.9)',
-        backdropFilter: 'blur(12px)',
+        left: sidebarWidth,
+        background: 'rgba(8,14,30,0.92)',
+        backdropFilter: 'blur(16px)',
         borderTop: '1px solid var(--color-surface-border)',
       }}
     >
-      <div className="flex items-center gap-2">
+      {/* Zoom controls */}
+      <div className="flex items-center gap-1.5">
         <button
-          onClick={() => setZoomValue(zoom - 10)}
-          className="p-1 rounded hover:bg-white/10 transition-colors"
-          aria-label="Zoom out"
+          onClick={() => changeZoom(-10)}
+          className="p-1.5 rounded hover:bg-white/10 transition-colors"
+          aria-label="Reducir zoom (Ctrl -)"
         >
-          <Minus size={14} className="text-[var(--color-text-muted)]" />
+          <Minus size={13} className="text-[var(--color-text-muted)]" />
         </button>
-        <span className="text-xs tabular-nums text-[var(--color-text-muted)] w-10 text-center">
+        <button
+          onClick={resetZoom}
+          className="min-w-[44px] text-center text-xs tabular-nums rounded px-1.5 py-0.5 hover:bg-white/10 transition-colors"
+          style={{ color: zoom !== 100 ? '#93c5fd' : 'var(--color-text-muted)' }}
+          title="Restablecer zoom (Ctrl 0)"
+        >
           {zoom}%
-        </span>
-        <button
-          onClick={() => setZoomValue(zoom + 10)}
-          className="p-1 rounded hover:bg-white/10 transition-colors"
-          aria-label="Zoom in"
-        >
-          <Plus size={14} className="text-[var(--color-text-muted)]" />
         </button>
+        <button
+          onClick={() => changeZoom(10)}
+          className="p-1.5 rounded hover:bg-white/10 transition-colors"
+          aria-label="Aumentar zoom (Ctrl +)"
+        >
+          <Plus size={13} className="text-[var(--color-text-muted)]" />
+        </button>
+        {zoom !== 100 && (
+          <button
+            onClick={resetZoom}
+            className="p-1 rounded hover:bg-white/10 transition-colors"
+            aria-label="Restablecer"
+          >
+            <RotateCcw size={11} className="text-[var(--color-text-muted)]" />
+          </button>
+        )}
       </div>
 
+      {/* Presentar */}
       <button
         onClick={onPresentar}
         className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-colors hover:bg-white/10"
@@ -65,10 +123,11 @@ export function Footer({ fechaCorte, onPresentar }: FooterProps) {
           border: '1px solid rgba(249,115,22,0.3)',
         }}
       >
-        <Maximize size={14} />
+        <Maximize size={13} />
         Presentar
       </button>
 
+      {/* Fecha corte */}
       <p className="text-xs text-[var(--color-text-muted)]">
         Corte: {formatFecha(fechaCorte)}
       </p>

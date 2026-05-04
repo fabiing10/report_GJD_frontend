@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import { getDataClient } from '@/lib/db'
-import { ProgressBar } from '@/components/presentacion/ProgressBar'
-import { ProyectoCard } from '@/components/presentacion/ProyectoCard'
+import { ProgressRing } from '@/components/presentacion/ProgressRing'
 import { PaginadorPuntos } from '@/components/presentacion/PaginadorPuntos'
+import { PlazoTabs } from '@/components/presentacion/PlazoTabs'
 
 interface Props {
   params: Promise<{ componenteSlug: string }>
@@ -19,47 +19,71 @@ export default async function ComponentePage({ params }: Props) {
     informe?.componentes.findIndex((c) => c.slug === componenteSlug) ?? 0
 
   return (
-    <div className="px-4 pt-6 pb-24 max-w-6xl mx-auto">
-      <div className="text-center mb-10">
-        <span
-          className="text-8xl leading-none mb-4 block"
-          style={{
-            filter: `drop-shadow(0 0 32px ${componente.color_hex}55)`,
-          }}
-          aria-hidden="true"
-        >
-          {componente.icono}
-        </span>
-        <h1 className="text-3xl font-display font-bold text-[var(--color-text-primary)]">
-          {componente.nombre}
-        </h1>
-        {componente.descripcion && (
-          <p className="text-[var(--color-text-secondary)] text-sm mt-2 max-w-lg mx-auto">
-            {componente.descripcion}
-          </p>
-        )}
-        <div className="mt-6 max-w-xs mx-auto">
-          <ProgressBar
+    <div className="px-6 pt-8 pb-24 max-w-6xl mx-auto">
+      {/* Hero: título izquierda — ring derecha */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 40,
+          marginBottom: 40,
+        }}
+      >
+        {/* Izquierda: icono + título + descripción */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 56,
+              lineHeight: 1,
+              display: 'block',
+              marginBottom: 12,
+              filter: `drop-shadow(0 0 24px ${componente.color_hex}55)`,
+            }}
+            aria-hidden="true"
+          >
+            {componente.icono}
+          </span>
+          <h1
+            style={{
+              fontSize: 32,
+              fontWeight: 800,
+              color: 'var(--color-text-primary)',
+              lineHeight: 1.15,
+              marginBottom: componente.descripcion ? 8 : 0,
+            }}
+          >
+            {componente.nombre}
+          </h1>
+          {componente.descripcion && (
+            <p
+              style={{
+                fontSize: 14,
+                color: 'var(--color-text-secondary)',
+                lineHeight: 1.5,
+                maxWidth: 480,
+              }}
+            >
+              {componente.descripcion}
+            </p>
+          )}
+        </div>
+
+        {/* Derecha: ring de avance general */}
+        <div style={{ flexShrink: 0 }}>
+          <ProgressRing
             value={componente.avance_calculado}
             color={componente.color_hex}
-            showLabel
+            size="lg"
+            label="avance general"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {componente.proyectos.map((proyecto, i) => (
-          <ProyectoCard
-            key={proyecto.id}
-            proyecto={proyecto}
-            componente={{
-              slug: componente.slug,
-              color_hex: componente.color_hex,
-            }}
-            index={i}
-          />
-        ))}
-      </div>
+      {/* Actividades agrupadas por plazo en tabs */}
+      <PlazoTabs
+        proyectos={componente.proyectos}
+        componente={{ slug: componente.slug, color_hex: componente.color_hex }}
+      />
 
       {informe && (
         <div className="flex justify-center mt-10">

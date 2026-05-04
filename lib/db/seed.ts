@@ -53,7 +53,6 @@ const PLAZO_MAP: Record<string, string> = {
   'Por definir': 'corto',
 }
 
-// Slugs canónicos de componentes (del spec §5)
 const COMPONENTE_SLUG_MAP: Record<string, string> = {
   automatizacion: 'gestion-notificaciones',
   visor360: 'automatizacion-desarrollo',
@@ -94,18 +93,26 @@ export function runSeed(dbPath = './local.db') {
   ) as DataJson
 
   const db = new Database(dbPath)
+  db.pragma('foreign_keys = OFF')
+
+  // Drop all tables for clean migration when schema changes
+  db.exec(`
+    DROP TABLE IF EXISTS proyecto_actividades;
+    DROP TABLE IF EXISTS proyecto_recursos;
+    DROP TABLE IF EXISTS proyecto_proximos_pasos;
+    DROP TABLE IF EXISTS proyecto_logros;
+    DROP TABLE IF EXISTS proyectos;
+    DROP TABLE IF EXISTS componentes;
+    DROP TABLE IF EXISTS informes;
+    DROP VIEW IF EXISTS v_componentes_con_avance;
+    DROP VIEW IF EXISTS v_informes_con_avance;
+    DROP TRIGGER IF EXISTS update_informes_updated_at;
+    DROP TRIGGER IF EXISTS update_componentes_updated_at;
+    DROP TRIGGER IF EXISTS update_proyectos_updated_at;
+  `)
+
   db.pragma('foreign_keys = ON')
   db.exec(schema)
-
-  // Limpiar datos existentes
-  db.exec(`
-    DELETE FROM proyecto_recursos;
-    DELETE FROM proyecto_proximos_pasos;
-    DELETE FROM proyecto_logros;
-    DELETE FROM proyectos;
-    DELETE FROM componentes;
-    DELETE FROM informes;
-  `)
 
   const informeId = randomUUID()
   db.prepare(
@@ -146,11 +153,15 @@ export function runSeed(dbPath = './local.db') {
       const estado = ESTADO_MAP[act.status] ?? 'no_iniciado'
       const plazo = PLAZO_MAP[act.phase] ?? 'corto'
 
+      const avanceCorto = act.progress
+      const avanceMediano = act.progress > 30 ? Math.round(act.progress * 0.4) : 0
+      const avanceLargo = 0
+
       db.prepare(
         `INSERT INTO proyectos
           (id, componente_id, slug, codigo, nombre, descripcion_corta, descripcion_larga,
-           plazo, estado, avance, orden)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           plazo, estado, avance, avance_corto, avance_mediano, avance_largo, orden)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
         proyectoId,
         componenteId,
@@ -162,25 +173,37 @@ export function runSeed(dbPath = './local.db') {
         plazo,
         estado,
         act.progress,
+        avanceCorto,
+        avanceMediano,
+        avanceLargo,
         actIndex
       )
 
-      act.achievements?.forEach((texto, i) => {
+      // Logros → plazo 'corto' (logros son cosas completadas, fase inmediata)
+      const logros = act.achievements ?? []
+      logros.forEach((texto, i) => {
         db.prepare(
-          'INSERT INTO proyecto_logros (id, proyecto_id, texto, orden) VALUES (?, ?, ?, ?)'
+          `INSERT INTO proyecto_logros (id, proyecto_id, texto, plazo, orden)
+           VALUES (?, ?, ?, 'corto', ?)`
         ).run(randomUUID(), proyectoId, texto, i)
       })
 
-      act.nextSteps?.forEach((texto, i) => {
+      // Próximos pasos: primera mitad → mediano, segunda mitad → largo
+      const pasos = act.nextSteps ?? []
+      const mitad = Math.ceil(pasos.length / 2)
+      pasos.forEach((texto, i) => {
+        const pasoPlazo = i < mitad ? 'mediano' : 'largo'
         db.prepare(
-          'INSERT INTO proyecto_proximos_pasos (id, proyecto_id, texto, orden) VALUES (?, ?, ?, ?)'
-        ).run(randomUUID(), proyectoId, texto, i)
+          `INSERT INTO proyecto_proximos_pasos (id, proyecto_id, texto, plazo, orden)
+           VALUES (?, ?, ?, ?, ?)`
+        ).run(randomUUID(), proyectoId, texto, pasoPlazo, i)
       })
 
       if (act.video) {
         db.prepare(
-          'INSERT INTO proyecto_recursos (id, proyecto_id, tipo, titulo, url, orden) VALUES (?, ?, ?, ?, ?, ?)'
-        ).run(randomUUID(), proyectoId, 'video_url', act.name, act.video, 0)
+          `INSERT INTO proyecto_recursos (id, proyecto_id, tipo, titulo, url, orden)
+           VALUES (?, ?, 'video_url', ?, ?, 0)`
+        ).run(randomUUID(), proyectoId, act.name, act.video)
       }
     })
   })
