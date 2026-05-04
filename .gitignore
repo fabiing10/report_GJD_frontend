@@ -50,3 +50,8 @@ local.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# SQLite WAL/SHM artifacts
+local.db-shm
+local.db-wal
+seed-test.db*
