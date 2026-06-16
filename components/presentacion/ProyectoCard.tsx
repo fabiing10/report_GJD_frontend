@@ -3,20 +3,24 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ProgressRing } from './ProgressRing'
-import { EstadoBadge, PlazoBadge } from './EstadoBadge'
+import { EstadoBadge } from './EstadoBadge'
 import type { ProyectoDetalle, ComponenteConAvance } from '@/types/domain'
 
 interface ProyectoCardProps {
   proyecto: ProyectoDetalle
   componente: Pick<ComponenteConAvance, 'slug' | 'color_hex'>
   index?: number
+  avanceOverride?: number
 }
 
 export function ProyectoCard({
   proyecto,
   componente,
   index = 0,
+  avanceOverride,
 }: ProyectoCardProps) {
+  const avance = avanceOverride ?? proyecto.avance_calculado
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -37,7 +41,7 @@ export function ProyectoCard({
         >
           <div className="flex gap-3">
             <ProgressRing
-              value={proyecto.avance}
+              value={avance}
               color={componente.color_hex}
               size="sm"
               className="shrink-0"
@@ -60,7 +64,6 @@ export function ProyectoCard({
           </div>
           <div className="flex gap-2 mt-3 flex-wrap">
             <EstadoBadge estado={proyecto.estado} />
-            <PlazoBadge plazo={proyecto.plazo} />
           </div>
         </div>
       </Link>

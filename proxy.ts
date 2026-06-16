@@ -1,30 +1,63 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+import { decideRedirect } from '@/lib/access'
+import type { RoleEnum } from '@/types/domain'
 
-const ALLOWED_EMAILS = (process.env['ADMIN_ALLOWED_EMAILS'] ?? '')
-  .split(',')
-  .map(e => e.trim().toLowerCase())
-  .filter(Boolean)
+export async function proxy(request: NextRequest) {
+  let response = NextResponse.next({ request })
 
-export function proxy(request: NextRequest) {
+  const supabase = createServerClient(
+    process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+    process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // No insertar código entre createServerClient y getUser().
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   const { pathname } = request.nextUrl
 
-  if (!pathname.startsWith('/admin')) return NextResponse.next()
-  if (pathname.startsWith('/admin/login')) return NextResponse.next()
-
-  const sessionEmail = request.cookies.get('admin_session')?.value
-
-  if (!sessionEmail) {
-    return NextResponse.redirect(new URL('/admin/login', request.url))
+  // El rol solo se necesita para la zona /admin.
+  let role: RoleEnum | null = null
+  if (user && pathname.startsWith('/admin')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    role = (profile?.role as RoleEnum | undefined) ?? null
   }
 
-  if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.includes(sessionEmail.toLowerCase())) {
-    const response = NextResponse.redirect(new URL('/admin/login?error=unauthorized', request.url))
-    response.cookies.delete('admin_session')
-    return response
+  const target = decideRedirect(pathname, Boolean(user), role)
+  if (target) {
+    const url = request.nextUrl.clone()
+    url.pathname = target
+    url.search = ''
+    return NextResponse.redirect(url)
   }
 
-  return NextResponse.next()
+  return response
 }
 
-export const config = { matcher: ['/admin/:path*'] }
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}

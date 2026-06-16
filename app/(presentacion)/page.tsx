@@ -1,11 +1,10 @@
 import Image from 'next/image'
-import { getDataClient } from '@/lib/db'
+import { getInformeActivo } from '@/lib/db/queries'
 import { ProgressRing } from '@/components/presentacion/ProgressRing'
 import { ComponenteCard } from '@/components/presentacion/ComponenteCard'
 
 export default async function HomePage() {
-  const client = getDataClient()
-  const informe = await client.getInformeActivo()
+  const informe = await getInformeActivo()
   if (!informe) return null
 
   return (

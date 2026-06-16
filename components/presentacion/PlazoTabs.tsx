@@ -13,24 +13,37 @@ const PLAZO_CONFIG: Record<PlazoEnum, { label: string; sublabel: string; icon: s
 
 const PLAZO_ORDER: PlazoEnum[] = ['corto', 'mediano', 'largo']
 
+function avancePorPlazo(pr: ProyectoDetalle, plazo: PlazoEnum): number {
+  const pl = pr.plazos.find((p) => p.plazo === plazo)
+  return pl ? pl.avance_calculado : pr.avance_calculado
+}
+
 interface PlazoTabsProps {
   proyectos: ProyectoDetalle[]
   componente: { slug: string; color_hex: string }
 }
 
 export function PlazoTabs({ proyectos, componente }: PlazoTabsProps) {
+  // Un proyecto aparece en un tab si tiene ese plazo definido
   const porPlazo = PLAZO_ORDER.reduce<Record<PlazoEnum, ProyectoDetalle[]>>(
     (acc, p) => {
-      acc[p] = proyectos.filter((pr) => pr.plazo === p)
+      acc[p] = proyectos.filter((pr) => pr.plazos.some((pl) => pl.plazo === p))
       return acc
     },
     { corto: [], mediano: [], largo: [] }
   )
 
-  const [active, setActive] = useState<PlazoEnum>('corto')
+  // Default al primer plazo que tenga proyectos, o 'corto' si ninguno
+  const defaultTab =
+    (PLAZO_ORDER.find((p) => porPlazo[p].length > 0) as PlazoEnum | undefined) ?? 'corto'
+
+  const [active, setActive] = useState<PlazoEnum>(defaultTab)
 
   const items = porPlazo[active]
-  const avance = items.length > 0 ? items.reduce((s, p) => s + p.avance, 0) / items.length : 0
+  const avance =
+    items.length > 0
+      ? items.reduce((s, p) => s + avancePorPlazo(p, active), 0) / items.length
+      : 0
   const completados = items.filter((p) => p.estado === 'completado').length
   const enProgreso = items.filter((p) => p.estado === 'en_progreso').length
 
@@ -54,7 +67,9 @@ export function PlazoTabs({ proyectos, componente }: PlazoTabsProps) {
           const isActive = active === plazo
           const isEmpty = count === 0
           const avgGrupo =
-            count > 0 ? porPlazo[plazo].reduce((s, p) => s + p.avance, 0) / count : 0
+            count > 0
+              ? porPlazo[plazo].reduce((s, p) => s + avancePorPlazo(p, plazo), 0) / count
+              : 0
 
           return (
             <button
@@ -87,9 +102,9 @@ export function PlazoTabs({ proyectos, componente }: PlazoTabsProps) {
             >
               <span
                 style={{
-                  fontSize: 16,
+                  fontSize: isActive ? 17 : 16,
                   fontWeight: isActive ? 700 : 600,
-                  color: isActive ? componente.color_hex : 'var(--color-text-primary)',
+                  color: isActive ? '#ffffff' : 'var(--color-text-primary)',
                   letterSpacing: '0.01em',
                 }}
               >
@@ -99,13 +114,13 @@ export function PlazoTabs({ proyectos, componente }: PlazoTabsProps) {
               {!isEmpty && (
                 <span
                   style={{
-                    fontSize: 12,
+                    fontSize: isActive ? 13 : 12,
                     padding: '2px 8px',
                     borderRadius: 99,
                     background: isActive
                       ? `${componente.color_hex}25`
                       : 'rgba(255,255,255,0.08)',
-                    color: isActive ? componente.color_hex : 'var(--color-text-muted)',
+                    color: isActive ? '#ffffff' : 'var(--color-text-muted)',
                     fontWeight: 700,
                     border: isActive
                       ? `1px solid ${componente.color_hex}40`
@@ -131,10 +146,10 @@ export function PlazoTabs({ proyectos, componente }: PlazoTabsProps) {
                   border: isActive
                     ? `2px solid ${componente.color_hex}70`
                     : '2px solid rgba(255,255,255,0.08)',
-                  fontSize: 13,
+                  fontSize: isActive ? 14 : 13,
                   fontWeight: 800,
                   fontVariantNumeric: 'tabular-nums',
-                  color: isActive ? componente.color_hex : 'rgba(100,116,139,0.6)',
+                  color: isActive ? '#ffffff' : 'rgba(100,116,139,0.6)',
                   flexShrink: 0,
                   transition: 'all 0.15s',
                 }}
@@ -240,10 +255,11 @@ export function PlazoTabs({ proyectos, componente }: PlazoTabsProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((proyecto, i) => (
             <ProyectoCard
-              key={proyecto.id}
+              key={`${proyecto.id}-${active}`}
               proyecto={proyecto}
               componente={componente}
               index={i}
+              avanceOverride={avancePorPlazo(proyecto, active)}
             />
           ))}
         </div>

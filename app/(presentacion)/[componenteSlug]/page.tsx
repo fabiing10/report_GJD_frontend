@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getDataClient } from '@/lib/db'
+import { getComponente, getInformeActivo } from '@/lib/db/queries'
 import { ProgressRing } from '@/components/presentacion/ProgressRing'
 import { PaginadorPuntos } from '@/components/presentacion/PaginadorPuntos'
 import { PlazoTabs } from '@/components/presentacion/PlazoTabs'
@@ -10,11 +10,10 @@ interface Props {
 
 export default async function ComponentePage({ params }: Props) {
   const { componenteSlug } = await params
-  const client = getDataClient()
-  const componente = await client.getComponente(componenteSlug)
+  const componente = await getComponente(componenteSlug)
   if (!componente) notFound()
 
-  const informe = await client.getInformeActivo()
+  const informe = await getInformeActivo()
   const componenteIndex =
     informe?.componentes.findIndex((c) => c.slug === componenteSlug) ?? 0
 

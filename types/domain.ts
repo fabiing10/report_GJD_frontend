@@ -1,5 +1,6 @@
 // types/domain.ts
 
+export type RoleEnum = 'admin' | 'usuario'
 export type PlazoEnum = 'corto' | 'mediano' | 'largo'
 export type EstadoEnum =
   | 'completado'
@@ -7,8 +8,22 @@ export type EstadoEnum =
   | 'no_iniciado'
   | 'refinamiento'
   | 'bloqueado'
+export type CriterioEstadoEnum = 'pendiente' | 'en_progreso' | 'cumplido'
+export type ActividadTipoEnum = 'reunion' | 'tarea' | 'investigacion' | 'informe'
+export type ActividadEstadoEnum = 'pendiente' | 'en_progreso' | 'completada'
 export type RecursoTipoEnum = 'video_url' | 'imagen' | 'link'
 
+// ── Identidad ──────────────────────────────────────────────
+export interface Profile {
+  id: string
+  email: string | null
+  full_name: string | null
+  role: RoleEnum
+  created_at: string
+  updated_at: string
+}
+
+// ── Entidades base ─────────────────────────────────────────
 export interface Informe {
   id: string
   titulo: string
@@ -43,34 +58,51 @@ export interface Proyecto {
   nombre: string
   descripcion_corta: string | null
   descripcion_larga: string | null
-  plazo: PlazoEnum
   estado: EstadoEnum
-  avance: number
-  avance_corto: number | null
-  avance_mediano: number | null
-  avance_largo: number | null
+  avance_override: number | null
   responsable: string | null
-  fecha_entrega: string | null
-  fecha_entrega_texto: string | null
+  fecha_inicio: string | null
+  fecha_fin: string | null
   orden: number
   created_at: string
   updated_at: string
 }
 
-export interface ProyectoLogro {
+export interface ProyectoPlazo {
   id: string
   proyecto_id: string
-  texto: string
   plazo: PlazoEnum
+  fecha_inicio: string | null
+  fecha_fin: string | null
+  avance_override: number | null
   orden: number
 }
 
-export interface ProyectoProximoPaso {
+export interface Criterio {
+  id: string
+  proyecto_plazo_id: string
+  texto: string
+  descripcion: string | null
+  peso: number
+  estado: CriterioEstadoEnum
+  orden: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Actividad {
   id: string
   proyecto_id: string
-  texto: string
-  plazo: PlazoEnum
+  proyecto_plazo_id: string | null
+  tipo: ActividadTipoEnum
+  titulo: string
+  descripcion: string | null
+  fecha: string | null
+  estado: ActividadEstadoEnum
+  responsable: string | null
   orden: number
+  created_at: string
+  updated_at: string
 }
 
 export interface ProyectoRecurso {
@@ -84,7 +116,20 @@ export interface ProyectoRecurso {
   orden: number
 }
 
-// View types (calculados desde las vistas del DB)
+// ── Tipos de vistas (avance calculado) ─────────────────────
+export interface PlazoConAvance extends ProyectoPlazo {
+  avance_calculado: number
+  total_criterios: number
+  criterios_cumplidos: number
+}
+
+export interface ProyectoConAvance extends Proyecto {
+  avance_calculado: number
+  total_plazos: number
+  total_criterios: number
+  criterios_cumplidos: number
+}
+
 export interface ComponenteConAvance extends Componente {
   avance_calculado: number
   total_actividades: number
@@ -95,11 +140,15 @@ export interface InformeConAvance extends Informe {
   avance_global_calculado: number
 }
 
-// Tipos compuestos para páginas
-export interface ProyectoDetalle extends Proyecto {
-  logros: ProyectoLogro[]
-  proximos_pasos: ProyectoProximoPaso[]
+// ── Tipos compuestos para páginas ──────────────────────────
+export interface PlazoDetalle extends PlazoConAvance {
+  criterios: Criterio[]
+}
+
+export interface ProyectoDetalle extends ProyectoConAvance {
+  plazos: PlazoDetalle[]
   recursos: ProyectoRecurso[]
+  actividades: Actividad[]
 }
 
 export interface ComponenteConProyectos extends ComponenteConAvance {
@@ -110,17 +159,13 @@ export interface InformeConRelaciones extends InformeConAvance {
   componentes: ComponenteConProyectos[]
 }
 
-// Tipos para mutations del admin
-export type ProyectoInput = Omit<Proyecto, 'id' | 'created_at' | 'updated_at'>
-export type ComponenteInput = Omit<Componente, 'id' | 'created_at' | 'updated_at'>
+// ── Inputs para mutations del admin ────────────────────────
+export type ProyectoInput = Omit<
+  Proyecto,
+  'id' | 'created_at' | 'updated_at'
+>
+export type ComponenteInput = Omit<
+  Componente,
+  'id' | 'created_at' | 'updated_at'
+>
 export type InformeInput = Omit<Informe, 'id' | 'created_at' | 'updated_at'>
-
-export interface LogroInput {
-  texto: string
-  plazo: PlazoEnum
-}
-
-export interface PasoInput {
-  texto: string
-  plazo: PlazoEnum
-}

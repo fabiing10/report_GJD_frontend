@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { Check, ArrowRight } from 'lucide-react'
 import { ProgressBar } from './ProgressBar'
-import type { PlazoEnum, ProyectoLogro, ProyectoProximoPaso } from '@/types/domain'
+import { logros, proximosPasos } from '@/lib/criterios'
+import type { PlazoEnum, PlazoDetalle } from '@/types/domain'
 
 const PLAZO_CONFIG: Record<PlazoEnum, { label: string; sublabel: string }> = {
   corto: { label: 'Corto Plazo', sublabel: 'Q1–Q2 2025' },
@@ -14,46 +15,27 @@ const PLAZO_CONFIG: Record<PlazoEnum, { label: string; sublabel: string }> = {
 const PLAZO_ORDER: PlazoEnum[] = ['corto', 'mediano', 'largo']
 
 interface ActividadesTabsProps {
-  logros: ProyectoLogro[]
-  proximos_pasos: ProyectoProximoPaso[]
-  avance_corto: number | null
-  avance_mediano: number | null
-  avance_largo: number | null
+  plazos: PlazoDetalle[]
   colorHex: string
 }
 
-export function ActividadesTabs({
-  logros,
-  proximos_pasos,
-  avance_corto,
-  avance_mediano,
-  avance_largo,
-  colorHex,
-}: ActividadesTabsProps) {
-  const avancePorPlazo: Record<PlazoEnum, number> = {
-    corto: avance_corto ?? 0,
-    mediano: avance_mediano ?? 0,
-    largo: avance_largo ?? 0,
+export function ActividadesTabs({ plazos, colorHex }: ActividadesTabsProps) {
+  const porPlazo: Record<PlazoEnum, PlazoDetalle | undefined> = {
+    corto: plazos.find((p) => p.plazo === 'corto'),
+    mediano: plazos.find((p) => p.plazo === 'mediano'),
+    largo: plazos.find((p) => p.plazo === 'largo'),
   }
 
-  const logrosPorPlazo: Record<PlazoEnum, ProyectoLogro[]> = {
-    corto: logros.filter((l) => l.plazo === 'corto'),
-    mediano: logros.filter((l) => l.plazo === 'mediano'),
-    largo: logros.filter((l) => l.plazo === 'largo'),
-  }
+  const defaultTab =
+    PLAZO_ORDER.find((p) => (porPlazo[p]?.criterios.length ?? 0) > 0) ?? 'corto'
+  const [active, setActive] = useState<PlazoEnum>(defaultTab)
 
-  const pasosPorPlazo: Record<PlazoEnum, ProyectoProximoPaso[]> = {
-    corto: proximos_pasos.filter((p) => p.plazo === 'corto'),
-    mediano: proximos_pasos.filter((p) => p.plazo === 'mediano'),
-    largo: proximos_pasos.filter((p) => p.plazo === 'largo'),
-  }
-
-  const [active, setActive] = useState<PlazoEnum>('corto')
-
-  const tabLogros = logrosPorPlazo[active]
-  const tabPasos = pasosPorPlazo[active]
-  const tabAvance = avancePorPlazo[active]
-  const isEmpty = tabLogros.length === 0 && tabPasos.length === 0
+  const activePlazo = porPlazo[active]
+  const criteriosActive = activePlazo?.criterios ?? []
+  const tabLogros = logros(criteriosActive)
+  const tabPasos = proximosPasos(criteriosActive)
+  const tabAvance = activePlazo?.avance_calculado ?? 0
+  const isEmpty = criteriosActive.length === 0
 
   return (
     <div style={{ marginTop: 32 }}>
@@ -79,9 +61,9 @@ export function ActividadesTabs({
         {PLAZO_ORDER.map((plazo) => {
           const cfg = PLAZO_CONFIG[plazo]
           const isActive = active === plazo
-          const count = logrosPorPlazo[plazo].length + pasosPorPlazo[plazo].length
+          const count = porPlazo[plazo]?.criterios.length ?? 0
           const isEmptyTab = count === 0
-          const pct = avancePorPlazo[plazo]
+          const pct = porPlazo[plazo]?.avance_calculado ?? 0
 
           return (
             <button

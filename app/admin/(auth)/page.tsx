@@ -1,9 +1,7 @@
-import { getDataClient } from '@/lib/db'
-import Link from 'next/link'
+import { getInformeActivo } from '@/lib/db/queries'
 
 export default async function AdminDashboard() {
-  const client = getDataClient()
-  const informe = await client.getInformeActivo()
+  const informe = await getInformeActivo()
 
   if (!informe) {
     return (
@@ -74,10 +72,13 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <div className="flex gap-3 flex-wrap">
-        <Link href="/admin/proyectos" className="inline-flex items-center justify-center rounded-lg h-8 px-3 text-sm font-medium bg-primary text-primary-foreground transition-colors hover:opacity-90">Editar proyectos</Link>
-        <Link href="/admin/componentes" className="inline-flex items-center justify-center rounded-lg h-8 px-3 text-sm font-medium border border-border bg-background hover:bg-muted transition-colors">Componentes</Link>
-        <Link href="/admin/informes" className="inline-flex items-center justify-center rounded-lg h-8 px-3 text-sm font-medium border border-border bg-background hover:bg-muted transition-colors">Informes</Link>
+      <div
+        className="rounded-xl p-4 border text-xs text-[var(--color-text-muted)]"
+        style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
+      >
+        La gestión y edición de informes, componentes, proyectos y criterios
+        llegará en el backoffice. Por ahora los datos se administran vía seed o
+        el panel de Supabase.
       </div>
     </div>
   )

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
 interface AdminTopbarProps {
@@ -13,9 +14,10 @@ export function AdminTopbar({ email }: AdminTopbarProps) {
   const router = useRouter()
 
   const handleLogout = async () => {
-    await fetch('/api/admin/auth', { method: 'DELETE' })
+    const supabase = createClient()
+    await supabase.auth.signOut()
     toast.success('Sesión cerrada')
-    router.push('/admin/login')
+    router.push('/login')
     router.refresh()
   }
 

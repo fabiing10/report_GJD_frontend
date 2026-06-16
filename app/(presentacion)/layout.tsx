@@ -1,4 +1,4 @@
-import { getDataClient } from '@/lib/db'
+import { getInformeActivo } from '@/lib/db/queries'
 import { PresentacionShell } from '@/components/presentacion/PresentacionShell'
 
 export const revalidate = 60
@@ -8,8 +8,7 @@ export default async function PresentacionLayout({
 }: {
   children: React.ReactNode
 }) {
-  const client = getDataClient()
-  const informe = await client.getInformeActivo()
+  const informe = await getInformeActivo()
   if (!informe) {
     return (
       <div className="p-8 text-red-400">

@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import { Check, ArrowRight } from 'lucide-react'
-import { getDataClient } from '@/lib/db'
+import { getComponente } from '@/lib/db/queries'
+import { criteriosDeProyecto, logros, proximosPasos } from '@/lib/criterios'
 import { ProgressRing } from '@/components/presentacion/ProgressRing'
-import { EstadoBadge, PlazoBadge } from '@/components/presentacion/EstadoBadge'
+import { EstadoBadge } from '@/components/presentacion/EstadoBadge'
 import { Breadcrumbs } from '@/components/presentacion/Breadcrumbs'
 import { NavegacionProyectos } from '@/components/presentacion/NavegacionProyectos'
 import { RecursoVisual } from '@/components/presentacion/RecursoVisual'
@@ -15,8 +16,7 @@ interface Props {
 
 export default async function ProyectoPage({ params }: Props) {
   const { componenteSlug, proyectoSlug } = await params
-  const client = getDataClient()
-  const componente = await client.getComponente(componenteSlug)
+  const componente = await getComponente(componenteSlug)
   if (!componente) notFound()
 
   const proyectoIndex = componente.proyectos.findIndex((p) => p.slug === proyectoSlug)
@@ -28,6 +28,10 @@ export default async function ProyectoPage({ params }: Props) {
     proyectoIndex < componente.proyectos.length - 1
       ? componente.proyectos[proyectoIndex + 1]!
       : null
+
+  const criterios = criteriosDeProyecto(proyecto.plazos)
+  const logrosProyecto = logros(criterios)
+  const pasosProyecto = proximosPasos(criterios)
 
   return (
     <div className="px-4 pt-4 pb-24 max-w-6xl mx-auto">
@@ -47,17 +51,16 @@ export default async function ProyectoPage({ params }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
         {/* Izq: ring + meta */}
         <div className="flex flex-col items-center gap-4 pt-4">
-          <ProgressRing value={proyecto.avance} color={componente.color_hex} size="lg" />
+          <ProgressRing value={proyecto.avance_calculado} color={componente.color_hex} size="lg" />
           <EstadoBadge estado={proyecto.estado} />
-          <PlazoBadge plazo={proyecto.plazo} />
           {proyecto.responsable && (
             <p className="text-xs text-[var(--color-text-muted)] text-center">
               {proyecto.responsable}
             </p>
           )}
-          {(proyecto.fecha_entrega_texto ?? proyecto.fecha_entrega) && (
+          {(proyecto.fecha_fin ?? proyecto.fecha_inicio) && (
             <p className="text-xs text-[var(--color-text-muted)] text-center">
-              {proyecto.fecha_entrega_texto ?? proyecto.fecha_entrega}
+              {proyecto.fecha_fin ?? proyecto.fecha_inicio}
             </p>
           )}
         </div>
@@ -74,8 +77,8 @@ export default async function ProyectoPage({ params }: Props) {
             </h2>
           </div>
           <ul className="space-y-2.5">
-            {proyecto.logros.length > 0 ? (
-              proyecto.logros.map((l) => (
+            {logrosProyecto.length > 0 ? (
+              logrosProyecto.map((l) => (
                 <li key={l.id} className="flex gap-2.5">
                   <Check size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-completado)]" />
                   <span className="text-sm text-[var(--color-text-secondary)]">{l.texto}</span>
@@ -99,8 +102,8 @@ export default async function ProyectoPage({ params }: Props) {
             </h2>
           </div>
           <ul className="space-y-2.5">
-            {proyecto.proximos_pasos.length > 0 ? (
-              proyecto.proximos_pasos.map((p) => (
+            {pasosProyecto.length > 0 ? (
+              pasosProyecto.map((p) => (
                 <li key={p.id} className="flex gap-2.5">
                   <ArrowRight size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-en-progreso)]" />
                   <span className="text-sm text-[var(--color-text-secondary)]">{p.texto}</span>
@@ -115,14 +118,7 @@ export default async function ProyectoPage({ params }: Props) {
 
       <RecursoVisual recursos={proyecto.recursos} />
 
-      <ActividadesTabs
-        logros={proyecto.logros}
-        proximos_pasos={proyecto.proximos_pasos}
-        avance_corto={proyecto.avance_corto}
-        avance_mediano={proyecto.avance_mediano}
-        avance_largo={proyecto.avance_largo}
-        colorHex={componente.color_hex}
-      />
+      <ActividadesTabs plazos={proyecto.plazos} colorHex={componente.color_hex} />
 
       <NavegacionProyectos prev={prev} next={next} componenteSlug={componenteSlug} />
 

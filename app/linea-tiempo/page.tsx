@@ -1,12 +1,11 @@
-import { getDataClient } from '@/lib/db'
+import { getInformeActivo } from '@/lib/db/queries'
 import { TimelineSVG } from '@/components/presentacion/TimelineSVG'
 import { PresentacionShell } from '@/components/presentacion/PresentacionShell'
 
 export const revalidate = 60
 
 export default async function LineaTiempoPage() {
-  const client = getDataClient()
-  const informe = await client.getInformeActivo()
+  const informe = await getInformeActivo()
   if (!informe) {
     return (
       <div className="p-8 text-red-400">

@@ -103,42 +103,39 @@ export function TimelineSVG({ componentes }: TimelineSVGProps) {
                 strokeDasharray="4,4"
               />
 
-              {componente.proyectos.map((proyecto) => {
-                const col = PLAZO_COLUMNS[proyecto.plazo] ?? 0
-                const xBase = LEFT_MARGIN + col * COL_WIDTH + COL_WIDTH / 2
-                const radius = 4 + (proyecto.avance / 100) * 10
-                const filled =
-                  proyecto.estado === 'completado'
-                    ? componente.color_hex
-                    : 'transparent'
+              {componente.proyectos.flatMap((proyecto) =>
+                proyecto.plazos.map((pl) => {
+                  const col = PLAZO_COLUMNS[pl.plazo] ?? 0
+                  const xBase = LEFT_MARGIN + col * COL_WIDTH + COL_WIDTH / 2
+                  const radius = 4 + (pl.avance_calculado / 100) * 10
+                  const filled =
+                    proyecto.estado === 'completado'
+                      ? componente.color_hex
+                      : 'transparent'
 
-                return (
-                  <g
-                    key={proyecto.id}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() =>
-                      router.push(`/${componente.slug}/${proyecto.slug}`)
-                    }
-                  >
-                    <circle
-                      cx={xBase}
-                      cy={y}
-                      r={radius + 4}
-                      fill="transparent"
-                    />
-                    <circle
-                      cx={xBase}
-                      cy={y}
-                      r={radius}
-                      fill={filled}
-                      stroke={componente.color_hex}
-                      strokeWidth="2"
-                      opacity={proyecto.estado === 'no_iniciado' ? 0.4 : 1}
-                    />
-                    <title>{`${proyecto.nombre} — ${Math.round(proyecto.avance)}%`}</title>
-                  </g>
-                )
-              })}
+                  return (
+                    <g
+                      key={`${proyecto.id}-${pl.plazo}`}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() =>
+                        router.push(`/${componente.slug}/${proyecto.slug}`)
+                      }
+                    >
+                      <circle cx={xBase} cy={y} r={radius + 4} fill="transparent" />
+                      <circle
+                        cx={xBase}
+                        cy={y}
+                        r={radius}
+                        fill={filled}
+                        stroke={componente.color_hex}
+                        strokeWidth="2"
+                        opacity={proyecto.estado === 'no_iniciado' ? 0.4 : 1}
+                      />
+                      <title>{`${proyecto.nombre} (${pl.plazo}) — ${Math.round(pl.avance_calculado)}%`}</title>
+                    </g>
+                  )
+                })
+              )}
             </g>
           )
         })}
