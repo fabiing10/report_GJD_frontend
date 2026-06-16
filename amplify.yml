@@ -1,0 +1,29 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Next 16 exige Node >= 20.9.0; Amplify soporta Node 20 y 22.
+        # Fijar la versión aquí controla build Y runtime SSR (la Lambda usa el major del build).
+        - nvm use 22
+        # pnpm no viene en la imagen de build de Amplify; npm sí. Instalar pnpm global
+        # es el ÚNICO método documentado por AWS. Versión pinneada = lockfile (v9.0).
+        - npm install -g pnpm@10.33.2
+        # Instalación reproducible contra el lockfile commiteado.
+        - pnpm install --frozen-lockfile
+    build:
+      commands:
+        # Amplify NO inyecta las env vars de la consola en el runtime SSR por defecto.
+        # Se vuelcan a .env.production para que los server components / server actions
+        # las lean en runtime. Las NEXT_PUBLIC_* además se hornean en el bundle cliente.
+        - env | grep -e NEXT_PUBLIC_SUPABASE_URL -e NEXT_PUBLIC_SUPABASE_ANON_KEY -e SUPABASE_SERVICE_ROLE_KEY >> .env.production
+        - pnpm run build
+  artifacts:
+    # baseDirectory .next => Amplify trata el build como compute/SSR (no estático).
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
