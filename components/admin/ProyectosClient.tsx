@@ -1,10 +1,27 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Pencil } from 'lucide-react'
+import { GripVertical, Pencil } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { Componente, EstadoEnum, ProyectoConAvance } from '@/types/domain'
 import type { ProyectoFormValues } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
@@ -29,7 +46,12 @@ import {
   DialogClose,
 } from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
-import { crearProyecto, actualizarProyecto, eliminarProyecto } from '@/lib/actions/proyectos'
+import {
+  crearProyecto,
+  actualizarProyecto,
+  eliminarProyecto,
+  reordenarProyectos,
+} from '@/lib/actions/proyectos'
 
 export interface ProyectoGrupo {
   componente: Componente
@@ -106,50 +128,88 @@ export function ProyectosClient({ grupos }: Props) {
       </div>
 
       {visibles.map((grupo) => (
-        <section
+        <GrupoSection
           key={grupo.componente.id}
-          className="rounded-xl border p-4 space-y-3"
-          style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="text-lg" aria-hidden>
-                {grupo.componente.icono}
-              </span>
-              <h2 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
-                {grupo.componente.nombre}
-              </h2>
-              <span className="text-[11px] text-[var(--color-text-muted)]">
-                {grupo.proyectos.length} proyecto{grupo.proyectos.length === 1 ? '' : 's'}
-              </span>
-            </div>
-            <ProyectoFormDialog
-              componenteId={grupo.componente.id}
-              triggerLabel="+ Nuevo proyecto"
-              title="Nuevo proyecto"
-              onDone={() => router.refresh()}
-            />
-          </div>
+          grupo={grupo}
+          onDone={() => router.refresh()}
+        />
+      ))}
+    </div>
+  )
+}
 
-          {grupo.proyectos.length === 0 ? (
-            <p className="text-xs text-[var(--color-text-muted)]">
-              Sin proyectos en este componente.
-            </p>
-          ) : (
+function GrupoSection({ grupo, onDone }: { grupo: ProyectoGrupo; onDone: () => void }) {
+  const [items, setItems] = useState<ProyectoConAvance[]>(grupo.proyectos)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = items.findIndex((p) => p.id === active.id)
+    const newIndex = items.findIndex((p) => p.id === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+
+    const previo = items
+    const reordenado = arrayMove(items, oldIndex, newIndex)
+    setItems(reordenado)
+    reordenarProyectos(grupo.componente.id, reordenado.map((p) => p.id))
+      .then(() => onDone())
+      .catch((e) => {
+        setItems(previo)
+        toast.error(e instanceof Error ? e.message : 'Error al reordenar')
+      })
+  }
+
+  return (
+    <section
+      className="rounded-xl border p-4 space-y-3"
+      style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-lg" aria-hidden>
+            {grupo.componente.icono}
+          </span>
+          <h2 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
+            {grupo.componente.nombre}
+          </h2>
+          <span className="text-[11px] text-[var(--color-text-muted)]">
+            {items.length} proyecto{items.length === 1 ? '' : 's'}
+          </span>
+        </div>
+        <ProyectoFormDialog
+          componenteId={grupo.componente.id}
+          triggerLabel="+ Nuevo proyecto"
+          title="Nuevo proyecto"
+          onDone={onDone}
+        />
+      </div>
+
+      {items.length === 0 ? (
+        <p className="text-xs text-[var(--color-text-muted)]">
+          Sin proyectos en este componente.
+        </p>
+      ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={items.map((p) => p.id)} strategy={verticalListSortingStrategy}>
             <ul className="space-y-2">
-              {grupo.proyectos.map((p) => (
+              {items.map((p) => (
                 <ProyectoRow
                   key={p.id}
                   proyecto={p}
                   componenteId={grupo.componente.id}
-                  onDone={() => router.refresh()}
+                  onDone={onDone}
                 />
               ))}
             </ul>
-          )}
-        </section>
-      ))}
-    </div>
+          </SortableContext>
+        </DndContext>
+      )}
+    </section>
   )
 }
 
@@ -162,11 +222,31 @@ function ProyectoRow({
   componenteId: string
   onDone: () => void
 }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: proyecto.id })
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   return (
     <li
+      ref={setNodeRef}
       className="flex items-center gap-3 rounded-lg border p-3"
-      style={{ borderColor: 'var(--color-surface-border)' }}
+      style={{
+        borderColor: 'var(--color-surface-border)',
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.6 : 1,
+      }}
     >
+      <button
+        type="button"
+        aria-label={`Reordenar ${proyecto.nombre}`}
+        className="cursor-grab touch-none text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+        {...(mounted ? attributes : {})}
+        {...(mounted ? listeners : {})}
+      >
+        <GripVertical size={16} />
+      </button>
       <Link
         href={`/admin/proyectos/${proyecto.id}`}
         className="group flex min-w-0 flex-1 items-center gap-3"

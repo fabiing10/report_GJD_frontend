@@ -1,8 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical } from 'lucide-react'
 import type { PlazoDetalle, Criterio } from '@/types/domain'
 import type { CriterioFormValues } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
@@ -32,6 +50,7 @@ import {
   crearCriterio,
   actualizarCriterio,
   eliminarCriterio,
+  reordenarCriterios,
 } from '@/lib/actions/criterios'
 
 type EstadoCriterio = Criterio['estado']
@@ -49,6 +68,34 @@ interface Props {
 
 export function PlazoCriterios({ plazo, proyectoId }: Props) {
   const router = useRouter()
+  const [criterios, setCriterios] = useState<Criterio[]>(plazo.criterios)
+
+  useEffect(() => {
+    setCriterios(plazo.criterios)
+  }, [plazo.criterios])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = criterios.findIndex((c) => c.id === active.id)
+    const newIndex = criterios.findIndex((c) => c.id === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+
+    const previo = criterios
+    const reordenado = arrayMove(criterios, oldIndex, newIndex)
+    setCriterios(reordenado)
+    reordenarCriterios(plazo.id, reordenado.map((c) => c.id))
+      .then(() => router.refresh())
+      .catch((e) => {
+        setCriterios(previo)
+        toast.error(e instanceof Error ? e.message : 'Error al reordenar')
+      })
+  }
 
   return (
     <div
@@ -92,21 +139,25 @@ export function PlazoCriterios({ plazo, proyectoId }: Props) {
         </div>
       </div>
 
-      {plazo.criterios.length === 0 ? (
+      {criterios.length === 0 ? (
         <p className="text-xs text-[var(--color-text-muted)]">
           Sin criterios todavía.
         </p>
       ) : (
-        <ul className="space-y-2">
-          {plazo.criterios.map((c) => (
-            <CriterioRow
-              key={c.id}
-              criterio={c}
-              plazoId={plazo.id}
-              onDone={() => router.refresh()}
-            />
-          ))}
-        </ul>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={criterios.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+            <ul className="space-y-2">
+              {criterios.map((c) => (
+                <CriterioRow
+                  key={c.id}
+                  criterio={c}
+                  plazoId={plazo.id}
+                  onDone={() => router.refresh()}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   )
@@ -124,6 +175,10 @@ function CriterioRow({
   const [peso, setPeso] = useState(String(criterio.peso))
   const [estado, setEstado] = useState<EstadoCriterio>(criterio.estado)
   const [loading, setLoading] = useState(false)
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: criterio.id })
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const dirty =
     Number(peso) !== criterio.peso || estado !== criterio.estado
@@ -149,7 +204,24 @@ function CriterioRow({
   }
 
   return (
-    <li className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--color-surface-border)] p-2">
+    <li
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.6 : 1,
+      }}
+      className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--color-surface-border)] p-2"
+    >
+      <button
+        type="button"
+        aria-label={`Reordenar ${criterio.texto}`}
+        className="cursor-grab touch-none text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+        {...(mounted ? attributes : {})}
+        {...(mounted ? listeners : {})}
+      >
+        <GripVertical size={14} />
+      </button>
       <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-secondary)]">
         {criterio.texto}
       </span>

@@ -76,7 +76,11 @@ export function ProyectoEditor({ proyecto }: Props) {
         </div>
       </div>
 
-      <DatosSection proyecto={proyecto} onDone={() => router.refresh()} />
+      <DatosSection
+        key={proyecto.updated_at}
+        proyecto={proyecto}
+        onDone={() => router.refresh()}
+      />
 
       <PlazosSection proyecto={proyecto} onDone={() => router.refresh()} />
 

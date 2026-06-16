@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -138,6 +138,8 @@ function ComponenteRow({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: componente.id })
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const avance = componente.avance_override
 
@@ -157,8 +159,8 @@ function ComponenteRow({
         type="button"
         aria-label={`Reordenar ${componente.nombre}`}
         className="cursor-grab touch-none text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-        {...attributes}
-        {...listeners}
+        {...(mounted ? attributes : {})}
+        {...(mounted ? listeners : {})}
       >
         <GripVertical size={16} />
       </button>
