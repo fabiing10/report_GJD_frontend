@@ -2,10 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard } from 'lucide-react'
+import { LayoutDashboard, FileText, Layers, FolderKanban, ClipboardList, Users } from 'lucide-react'
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/admin/informes', label: 'Informes', icon: FileText, exact: false },
+  { href: '/admin/componentes', label: 'Componentes', icon: Layers, exact: false },
+  { href: '/admin/proyectos', label: 'Proyectos', icon: FolderKanban, exact: false },
+  { href: '/admin/actividades', label: 'Actividades', icon: ClipboardList, exact: false },
+  { href: '/admin/usuarios', label: 'Usuarios', icon: Users, exact: false },
 ]
 
 export function AdminSidebar() {
