@@ -21,8 +21,14 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
-import type { PlazoDetalle, Criterio } from '@/types/domain'
-import type { CriterioFormValues } from '@/lib/schemas'
+import type {
+  Objetivo,
+  ObjetivoDetalle,
+  PlazoEnum,
+  ObjetivoTipoEnum,
+  ObjetivoEstadoEnum,
+} from '@/types/domain'
+import type { ObjetivoFormValues } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -45,34 +51,53 @@ import {
   DialogClose,
 } from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
-import { eliminarPlazo } from '@/lib/actions/plazos'
 import {
-  crearCriterio,
-  actualizarCriterio,
-  eliminarCriterio,
-  reordenarCriterios,
-} from '@/lib/actions/criterios'
+  crearObjetivo,
+  actualizarObjetivo,
+  eliminarObjetivo,
+  reordenarObjetivos,
+} from '@/lib/actions/objetivos'
 
-type EstadoCriterio = Criterio['estado']
-
-const PLAZO_LABEL: Record<PlazoDetalle['plazo'], string> = {
+const PLAZO_LABEL: Record<PlazoEnum, string> = {
   corto: 'Corto plazo',
   mediano: 'Mediano plazo',
   largo: 'Largo plazo',
 }
 
+const TIPOS: { value: ObjetivoTipoEnum; label: string }[] = [
+  { value: 'hu', label: 'HU' },
+  { value: 'funcionalidad', label: 'Funcionalidad' },
+]
+
+const ESTADOS: { value: ObjetivoEstadoEnum; label: string }[] = [
+  { value: 'pendiente', label: 'Pendiente' },
+  { value: 'en_progreso', label: 'En progreso' },
+  { value: 'cumplido', label: 'Cumplido' },
+]
+
+const PLAZOS: { value: PlazoEnum; label: string }[] = [
+  { value: 'corto', label: 'Corto plazo' },
+  { value: 'mediano', label: 'Mediano plazo' },
+  { value: 'largo', label: 'Largo plazo' },
+]
+
 interface Props {
-  plazo: PlazoDetalle
   proyectoId: string
+  plazo: PlazoEnum
+  objetivos: ObjetivoDetalle[]
 }
 
-export function PlazoCriterios({ plazo, proyectoId }: Props) {
+/**
+ * Editor de los objetivos (HU/Funcionalidad) de un proyecto agrupados por plazo.
+ * Reordena con dnd y crea/edita/elimina objetivos del grupo.
+ */
+export function ObjetivosPorPlazo({ proyectoId, plazo, objetivos }: Props) {
   const router = useRouter()
-  const [criterios, setCriterios] = useState<Criterio[]>(plazo.criterios)
+  const [items, setItems] = useState<ObjetivoDetalle[]>(objetivos)
 
   useEffect(() => {
-    setCriterios(plazo.criterios)
-  }, [plazo.criterios])
+    setItems(objetivos)
+  }, [objetivos])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -82,17 +107,17 @@ export function PlazoCriterios({ plazo, proyectoId }: Props) {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
-    const oldIndex = criterios.findIndex((c) => c.id === active.id)
-    const newIndex = criterios.findIndex((c) => c.id === over.id)
+    const oldIndex = items.findIndex((o) => o.id === active.id)
+    const newIndex = items.findIndex((o) => o.id === over.id)
     if (oldIndex < 0 || newIndex < 0) return
 
-    const previo = criterios
-    const reordenado = arrayMove(criterios, oldIndex, newIndex)
-    setCriterios(reordenado)
-    reordenarCriterios(plazo.id, reordenado.map((c) => c.id))
+    const previo = items
+    const reordenado = arrayMove(items, oldIndex, newIndex)
+    setItems(reordenado)
+    reordenarObjetivos(proyectoId, reordenado.map((o) => o.id))
       .then(() => router.refresh())
       .catch((e) => {
-        setCriterios(previo)
+        setItems(previo)
         toast.error(e instanceof Error ? e.message : 'Error al reordenar')
       })
   }
@@ -106,54 +131,28 @@ export function PlazoCriterios({ plazo, proyectoId }: Props) {
       }}
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
-            {PLAZO_LABEL[plazo.plazo]}
-          </h3>
-          <span
-            className="text-xs tabular-nums font-semibold"
-            style={{ color: 'var(--color-alcaldia-naranja)' }}
-          >
-            {Math.round(plazo.avance_calculado)}%
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <CriterioFormDialog
-            plazoId={plazo.id}
-            triggerLabel="+ criterio"
-            title="Nuevo criterio"
-            onDone={() => router.refresh()}
-          />
-          <ConfirmDialog
-            triggerLabel="Quitar plazo"
-            triggerVariant="destructive"
-            title={`Quitar ${PLAZO_LABEL[plazo.plazo].toLowerCase()}`}
-            description="Esto elimina en cascada sus criterios. Esta acción no se puede deshacer."
-            confirmLabel="Quitar"
-            onConfirm={async () => {
-              await eliminarPlazo(plazo.id)
-              toast.success('Plazo eliminado')
-              router.refresh()
-            }}
-          />
-        </div>
+        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+          {PLAZO_LABEL[plazo]}
+        </h3>
+        <ObjetivoFormDialog
+          proyectoId={proyectoId}
+          plazo={plazo}
+          triggerLabel="+ objetivo"
+          title={`Nuevo objetivo · ${PLAZO_LABEL[plazo].toLowerCase()}`}
+          onDone={() => router.refresh()}
+        />
       </div>
 
-      {criterios.length === 0 ? (
+      {items.length === 0 ? (
         <p className="text-xs text-[var(--color-text-muted)]">
-          Sin criterios todavía.
+          Sin objetivos todavía.
         </p>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={criterios.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={items.map((o) => o.id)} strategy={verticalListSortingStrategy}>
             <ul className="space-y-2">
-              {criterios.map((c) => (
-                <CriterioRow
-                  key={c.id}
-                  criterio={c}
-                  plazoId={plazo.id}
-                  onDone={() => router.refresh()}
-                />
+              {items.map((o) => (
+                <ObjetivoRow key={o.id} objetivo={o} onDone={() => router.refresh()} />
               ))}
             </ul>
           </SortableContext>
@@ -163,38 +162,45 @@ export function PlazoCriterios({ plazo, proyectoId }: Props) {
   )
 }
 
-function CriterioRow({
-  criterio,
-  plazoId,
+function ObjetivoRow({
+  objetivo,
   onDone,
 }: {
-  criterio: Criterio
-  plazoId: string
+  objetivo: Objetivo
   onDone: () => void
 }) {
-  const [peso, setPeso] = useState(String(criterio.peso))
-  const [estado, setEstado] = useState<EstadoCriterio>(criterio.estado)
+  const [titulo, setTitulo] = useState(objetivo.titulo)
+  const [tipo, setTipo] = useState<ObjetivoTipoEnum>(objetivo.tipo)
+  const [plazo, setPlazo] = useState<PlazoEnum>(objetivo.plazo)
+  const [estado, setEstado] = useState<ObjetivoEstadoEnum>(objetivo.estado)
+  const [peso, setPeso] = useState(String(objetivo.peso))
   const [loading, setLoading] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: criterio.id })
+    useSortable({ id: objetivo.id })
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
   const dirty =
-    Number(peso) !== criterio.peso || estado !== criterio.estado
+    titulo.trim() !== objetivo.titulo ||
+    tipo !== objetivo.tipo ||
+    plazo !== objetivo.plazo ||
+    estado !== objetivo.estado ||
+    Number(peso) !== objetivo.peso
 
   async function handleSave() {
     setLoading(true)
     try {
-      const input: CriterioFormValues = {
-        proyecto_plazo_id: plazoId,
-        texto: criterio.texto,
-        descripcion: criterio.descripcion,
-        peso: Number(peso),
+      const input: ObjetivoFormValues = {
+        proyecto_id: objetivo.proyecto_id,
+        titulo: titulo.trim(),
+        descripcion: objetivo.descripcion,
+        tipo,
+        plazo,
         estado,
+        peso: Number(peso),
       }
-      await actualizarCriterio(criterio.id, input)
-      toast.success('Criterio actualizado')
+      await actualizarObjetivo(objetivo.id, input)
+      toast.success('Objetivo actualizado')
       onDone()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Error al guardar')
@@ -211,102 +217,147 @@ function CriterioRow({
         transition,
         opacity: isDragging ? 0.6 : 1,
       }}
-      className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--color-surface-border)] p-2"
+      className="space-y-2 rounded-lg border border-[var(--color-surface-border)] p-2"
     >
-      <button
-        type="button"
-        aria-label={`Reordenar ${criterio.texto}`}
-        className="cursor-grab touch-none text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-        {...(mounted ? attributes : {})}
-        {...(mounted ? listeners : {})}
-      >
-        <GripVertical size={14} />
-      </button>
-      <span className="min-w-0 flex-1 truncate text-sm text-[var(--color-text-secondary)]">
-        {criterio.texto}
-      </span>
-      <div className="flex items-center gap-1">
-        <Label htmlFor={`peso-${criterio.id}`} className="text-[11px] text-[var(--color-text-muted)]">
-          Peso
-        </Label>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label={`Reordenar ${objetivo.titulo}`}
+          className="cursor-grab touch-none text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
+          {...(mounted ? attributes : {})}
+          {...(mounted ? listeners : {})}
+        >
+          <GripVertical size={14} />
+        </button>
         <Input
-          id={`peso-${criterio.id}`}
-          type="number"
-          min={0}
-          max={1000}
-          value={peso}
-          onChange={(e) => setPeso(e.target.value)}
-          className="h-7 w-16 tabular-nums"
+          aria-label={`Título de ${objetivo.titulo}`}
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          className="h-7 min-w-0 flex-1 text-sm"
         />
       </div>
-      <Select value={estado} onValueChange={(v) => setEstado(v as EstadoCriterio)}>
-        <SelectTrigger size="sm" aria-label={`Estado de ${criterio.texto}`}>
-          <SelectValue placeholder="Estado" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="pendiente">Pendiente</SelectItem>
-          <SelectItem value="en_progreso">En progreso</SelectItem>
-          <SelectItem value="cumplido">Cumplido</SelectItem>
-        </SelectContent>
-      </Select>
-      <Button
-        size="sm"
-        className="text-xs"
-        disabled={!dirty || loading}
-        onClick={handleSave}
-      >
-        {loading ? '…' : 'Guardar'}
-      </Button>
-      <ConfirmDialog
-        triggerLabel="Eliminar"
-        triggerVariant="destructive"
-        title="Eliminar criterio"
-        description="Esta acción no se puede deshacer."
-        confirmLabel="Eliminar"
-        onConfirm={async () => {
-          await eliminarCriterio(criterio.id)
-          toast.success('Criterio eliminado')
-          onDone()
-        }}
-      />
+      <div className="flex flex-wrap items-center gap-2 pl-6">
+        <Select value={tipo} onValueChange={(v) => setTipo(v as ObjetivoTipoEnum)}>
+          <SelectTrigger size="sm" aria-label={`Tipo de ${objetivo.titulo}`}>
+            <SelectValue placeholder="Tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            {TIPOS.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                {t.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={plazo} onValueChange={(v) => setPlazo(v as PlazoEnum)}>
+          <SelectTrigger size="sm" aria-label={`Plazo de ${objetivo.titulo}`}>
+            <SelectValue placeholder="Plazo" />
+          </SelectTrigger>
+          <SelectContent>
+            {PLAZOS.map((p) => (
+              <SelectItem key={p.value} value={p.value}>
+                {p.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={estado} onValueChange={(v) => setEstado(v as ObjetivoEstadoEnum)}>
+          <SelectTrigger size="sm" aria-label={`Estado de ${objetivo.titulo}`}>
+            <SelectValue placeholder="Estado" />
+          </SelectTrigger>
+          <SelectContent>
+            {ESTADOS.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex items-center gap-1">
+          <Label htmlFor={`peso-${objetivo.id}`} className="text-[11px] text-[var(--color-text-muted)]">
+            Peso
+          </Label>
+          <Input
+            id={`peso-${objetivo.id}`}
+            type="number"
+            min={0}
+            max={1000}
+            value={peso}
+            onChange={(e) => setPeso(e.target.value)}
+            className="h-7 w-16 tabular-nums"
+          />
+        </div>
+        <Button
+          size="sm"
+          className="text-xs"
+          disabled={!dirty || loading || !titulo.trim()}
+          onClick={handleSave}
+        >
+          {loading ? '…' : 'Guardar'}
+        </Button>
+        <ConfirmDialog
+          triggerLabel="Eliminar"
+          triggerVariant="destructive"
+          title="Eliminar objetivo"
+          description="Esto elimina en cascada sus actividades. Esta acción no se puede deshacer."
+          confirmLabel="Eliminar"
+          onConfirm={async () => {
+            await eliminarObjetivo(objetivo.id)
+            toast.success('Objetivo eliminado')
+            onDone()
+          }}
+        />
+      </div>
     </li>
   )
 }
 
-function CriterioFormDialog({
-  plazoId,
+function ObjetivoFormDialog({
+  proyectoId,
+  plazo,
   triggerLabel,
   title,
   onDone,
 }: {
-  plazoId: string
+  proyectoId: string
+  plazo: PlazoEnum
   triggerLabel: string
   title: string
   onDone: () => void
 }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [estado, setEstado] = useState<EstadoCriterio>('pendiente')
+  const [tipo, setTipo] = useState<ObjetivoTipoEnum>('hu')
+  const [estado, setEstado] = useState<ObjetivoEstadoEnum>('pendiente')
+  const [plazoSel, setPlazoSel] = useState<PlazoEnum>(plazo)
+
+  function reset() {
+    setTipo('hu')
+    setEstado('pendiente')
+    setPlazoSel(plazo)
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     const pesoRaw = String(fd.get('peso') ?? '').trim()
 
-    const input: CriterioFormValues = {
-      proyecto_plazo_id: plazoId,
-      texto: String(fd.get('texto') ?? '').trim(),
+    const input: ObjetivoFormValues = {
+      proyecto_id: proyectoId,
+      titulo: String(fd.get('titulo') ?? '').trim(),
       descripcion: String(fd.get('descripcion') ?? '').trim() || null,
-      peso: pesoRaw === '' ? 1 : Number(pesoRaw),
+      tipo,
+      plazo: plazoSel,
       estado,
+      peso: pesoRaw === '' ? 1 : Number(pesoRaw),
     }
 
     setLoading(true)
     try {
-      await crearCriterio(input)
-      toast.success('Criterio creado')
+      await crearObjetivo(input)
+      toast.success('Objetivo creado')
       setOpen(false)
-      setEstado('pendiente')
+      reset()
       onDone()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error al guardar')
@@ -324,14 +375,14 @@ function CriterioFormDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            El peso define cuánto aporta el criterio al avance del plazo.
+            El peso define cuánto aporta el objetivo al avance del proyecto.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="texto">Texto</Label>
-            <Input id="texto" name="texto" required maxLength={500} />
+            <Label htmlFor="titulo">Título</Label>
+            <Input id="titulo" name="titulo" required maxLength={500} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="descripcion">Descripción (opcional)</Label>
@@ -339,28 +390,53 @@ function CriterioFormDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="peso">Peso</Label>
-              <Input
-                id="peso"
-                name="peso"
-                type="number"
-                min={0}
-                max={1000}
-                defaultValue={1}
-              />
+              <Label htmlFor="objetivo-tipo">Tipo</Label>
+              <Select value={tipo} onValueChange={(v) => setTipo(v as ObjetivoTipoEnum)}>
+                <SelectTrigger id="objetivo-tipo" className="w-full">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIPOS.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="criterio-estado">Estado</Label>
-              <Select value={estado} onValueChange={(v) => setEstado(v as EstadoCriterio)}>
-                <SelectTrigger id="criterio-estado" className="w-full">
+              <Label htmlFor="objetivo-plazo">Plazo</Label>
+              <Select value={plazoSel} onValueChange={(v) => setPlazoSel(v as PlazoEnum)}>
+                <SelectTrigger id="objetivo-plazo" className="w-full">
+                  <SelectValue placeholder="Plazo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLAZOS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>
+                      {p.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="objetivo-estado">Estado</Label>
+              <Select value={estado} onValueChange={(v) => setEstado(v as ObjetivoEstadoEnum)}>
+                <SelectTrigger id="objetivo-estado" className="w-full">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pendiente">Pendiente</SelectItem>
-                  <SelectItem value="en_progreso">En progreso</SelectItem>
-                  <SelectItem value="cumplido">Cumplido</SelectItem>
+                  {ESTADOS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="peso">Peso</Label>
+              <Input id="peso" name="peso" type="number" min={0} max={1000} defaultValue={1} />
             </div>
           </div>
 

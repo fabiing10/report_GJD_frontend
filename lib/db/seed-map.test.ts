@@ -44,20 +44,24 @@ describe('mapDataToPlan', () => {
     expect(plan.componentes[0]!.orden).toBe(0)
   })
 
-  it('proyecto con código parseado, override y un plazo', () => {
+  it('proyecto con código parseado y override, sin plazo ni criterios', () => {
     const p = plan.componentes[0]!.proyectos[0]!
     expect(p.codigo).toBe('HU-1')
     expect(p.avance_override).toBe(100)
     expect(p.estado).toBe('completado')
-    expect(p.plazo.plazo).toBe('corto')
-    expect(p.plazo.avance_override).toBe(100)
+    expect(p).not.toHaveProperty('plazo')
+    expect(p).not.toHaveProperty('criterios')
+    expect(Array.isArray(p.objetivos)).toBe(true)
   })
 
-  it('achievements→cumplido, nextSteps→pendiente, peso 1', () => {
-    const crit = plan.componentes[0]!.proyectos[0]!.plazo.criterios
-    expect(crit.filter((c) => c.estado === 'cumplido').map((c) => c.texto)).toEqual(['Logro A', 'Logro B'])
-    expect(crit.filter((c) => c.estado === 'pendiente').map((c) => c.texto)).toEqual(['Paso A'])
-    expect(crit.every((c) => c.peso === 1)).toBe(true)
+  it('achievements→cumplido, nextSteps→pendiente, tipo hu, plazo y peso 1', () => {
+    const objs = plan.componentes[0]!.proyectos[0]!.objetivos
+    expect(objs.filter((o) => o.estado === 'cumplido').map((o) => o.titulo)).toEqual(['Logro A', 'Logro B'])
+    expect(objs.filter((o) => o.estado === 'pendiente').map((o) => o.titulo)).toEqual(['Paso A'])
+    expect(objs.every((o) => o.peso === 1)).toBe(true)
+    expect(objs.every((o) => o.tipo === 'hu')).toBe(true)
+    expect(objs.every((o) => o.plazo === 'corto')).toBe(true)
+    expect(objs.map((o) => o.orden)).toEqual([0, 1, 2])
   })
 
   it('video → recurso video_url', () => {

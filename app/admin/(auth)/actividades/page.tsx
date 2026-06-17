@@ -8,9 +8,14 @@ export default async function ActividadesPage() {
     getInformeActivo(),
   ])
 
-  const proyectos = (informe?.componentes ?? []).flatMap((c) =>
-    c.proyectos.map((p) => ({ id: p.id, nombre: p.nombre }))
+  const objetivos = (informe?.componentes ?? []).flatMap((c) =>
+    c.proyectos.flatMap((p) =>
+      p.objetivos.map((o) => ({
+        id: o.id,
+        label: `${p.nombre} — ${o.titulo}`,
+      }))
+    )
   )
 
-  return <ActividadesClient actividades={actividades} proyectos={proyectos} />
+  return <ActividadesClient actividades={actividades} objetivos={objetivos} />
 }

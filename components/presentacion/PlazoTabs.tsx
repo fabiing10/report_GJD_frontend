@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ProyectoCard } from './ProyectoCard'
 import { ProgressBar } from './ProgressBar'
+import { avancePlazo, PLAZO_ORDER } from '@/lib/objetivos'
 import type { PlazoEnum, ProyectoDetalle } from '@/types/domain'
 
 const PLAZO_CONFIG: Record<PlazoEnum, { label: string; sublabel: string; icon: string }> = {
@@ -11,11 +12,8 @@ const PLAZO_CONFIG: Record<PlazoEnum, { label: string; sublabel: string; icon: s
   largo: { label: 'Largo Plazo', sublabel: '2026+', icon: '🔭' },
 }
 
-const PLAZO_ORDER: PlazoEnum[] = ['corto', 'mediano', 'largo']
-
 function avancePorPlazo(pr: ProyectoDetalle, plazo: PlazoEnum): number {
-  const pl = pr.plazos.find((p) => p.plazo === plazo)
-  return pl ? pl.avance_calculado : pr.avance_calculado
+  return avancePlazo(pr.objetivos, plazo)
 }
 
 interface PlazoTabsProps {
@@ -27,7 +25,7 @@ export function PlazoTabs({ proyectos, componente }: PlazoTabsProps) {
   // Un proyecto aparece en un tab si tiene ese plazo definido
   const porPlazo = PLAZO_ORDER.reduce<Record<PlazoEnum, ProyectoDetalle[]>>(
     (acc, p) => {
-      acc[p] = proyectos.filter((pr) => pr.plazos.some((pl) => pl.plazo === p))
+      acc[p] = proyectos.filter((pr) => pr.objetivos.some((o) => o.plazo === p))
       return acc
     },
     { corto: [], mediano: [], largo: [] }

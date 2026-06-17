@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import type { ComponenteConProyectos } from '@/types/domain'
+import { avancePlazo, PLAZO_ORDER } from '@/lib/objetivos'
 
 const PLAZO_COLUMNS: Record<string, number> = {
   corto: 0,
@@ -104,10 +105,13 @@ export function TimelineSVG({ componentes }: TimelineSVGProps) {
               />
 
               {componente.proyectos.flatMap((proyecto) =>
-                proyecto.plazos.map((pl) => {
-                  const col = PLAZO_COLUMNS[pl.plazo] ?? 0
+                PLAZO_ORDER.filter((plz) =>
+                  proyecto.objetivos.some((o) => o.plazo === plz)
+                ).map((plz) => {
+                  const col = PLAZO_COLUMNS[plz] ?? 0
                   const xBase = LEFT_MARGIN + col * COL_WIDTH + COL_WIDTH / 2
-                  const radius = 4 + (pl.avance_calculado / 100) * 10
+                  const av = avancePlazo(proyecto.objetivos, plz)
+                  const radius = 4 + (av / 100) * 10
                   const filled =
                     proyecto.estado === 'completado'
                       ? componente.color_hex
@@ -115,7 +119,7 @@ export function TimelineSVG({ componentes }: TimelineSVGProps) {
 
                   return (
                     <g
-                      key={`${proyecto.id}-${pl.plazo}`}
+                      key={`${proyecto.id}-${plz}`}
                       style={{ cursor: 'pointer' }}
                       onClick={() =>
                         router.push(`/${componente.slug}/${proyecto.slug}`)
@@ -131,7 +135,7 @@ export function TimelineSVG({ componentes }: TimelineSVGProps) {
                         strokeWidth="2"
                         opacity={proyecto.estado === 'no_iniciado' ? 0.4 : 1}
                       />
-                      <title>{`${proyecto.nombre} (${pl.plazo}) — ${Math.round(pl.avance_calculado)}%`}</title>
+                      <title>{`${proyecto.nombre} (${plz}) — ${Math.round(av)}%`}</title>
                     </g>
                   )
                 })

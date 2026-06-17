@@ -3,8 +3,14 @@
 import { useState } from 'react'
 import { Check, ArrowRight } from 'lucide-react'
 import { ProgressBar } from './ProgressBar'
-import { logros, proximosPasos } from '@/lib/criterios'
-import type { PlazoEnum, PlazoDetalle } from '@/types/domain'
+import {
+  avancePlazo,
+  logros,
+  objetivosPorPlazo,
+  proximosPasos,
+  PLAZO_ORDER,
+} from '@/lib/objetivos'
+import type { PlazoEnum, ObjetivoDetalle } from '@/types/domain'
 
 const PLAZO_CONFIG: Record<PlazoEnum, { label: string; sublabel: string }> = {
   corto: { label: 'Corto Plazo', sublabel: 'Q1–Q2 2025' },
@@ -12,30 +18,26 @@ const PLAZO_CONFIG: Record<PlazoEnum, { label: string; sublabel: string }> = {
   largo: { label: 'Largo Plazo', sublabel: '2026+' },
 }
 
-const PLAZO_ORDER: PlazoEnum[] = ['corto', 'mediano', 'largo']
-
 interface ActividadesTabsProps {
-  plazos: PlazoDetalle[]
+  objetivos: ObjetivoDetalle[]
   colorHex: string
 }
 
-export function ActividadesTabs({ plazos, colorHex }: ActividadesTabsProps) {
-  const porPlazo: Record<PlazoEnum, PlazoDetalle | undefined> = {
-    corto: plazos.find((p) => p.plazo === 'corto'),
-    mediano: plazos.find((p) => p.plazo === 'mediano'),
-    largo: plazos.find((p) => p.plazo === 'largo'),
+export function ActividadesTabs({ objetivos, colorHex }: ActividadesTabsProps) {
+  const porPlazo: Record<PlazoEnum, ObjetivoDetalle[]> = {
+    corto: objetivosPorPlazo(objetivos, 'corto'),
+    mediano: objetivosPorPlazo(objetivos, 'mediano'),
+    largo: objetivosPorPlazo(objetivos, 'largo'),
   }
 
-  const defaultTab =
-    PLAZO_ORDER.find((p) => (porPlazo[p]?.criterios.length ?? 0) > 0) ?? 'corto'
+  const defaultTab = PLAZO_ORDER.find((p) => porPlazo[p].length > 0) ?? 'corto'
   const [active, setActive] = useState<PlazoEnum>(defaultTab)
 
-  const activePlazo = porPlazo[active]
-  const criteriosActive = activePlazo?.criterios ?? []
-  const tabLogros = logros(criteriosActive)
-  const tabPasos = proximosPasos(criteriosActive)
-  const tabAvance = activePlazo?.avance_calculado ?? 0
-  const isEmpty = criteriosActive.length === 0
+  const objetivosActive = porPlazo[active]
+  const tabLogros = logros(objetivosActive)
+  const tabPasos = proximosPasos(objetivosActive)
+  const tabAvance = avancePlazo(objetivos, active)
+  const isEmpty = objetivosActive.length === 0
 
   return (
     <div style={{ marginTop: 32 }}>
@@ -61,9 +63,9 @@ export function ActividadesTabs({ plazos, colorHex }: ActividadesTabsProps) {
         {PLAZO_ORDER.map((plazo) => {
           const cfg = PLAZO_CONFIG[plazo]
           const isActive = active === plazo
-          const count = porPlazo[plazo]?.criterios.length ?? 0
+          const count = porPlazo[plazo].length
           const isEmptyTab = count === 0
-          const pct = porPlazo[plazo]?.avance_calculado ?? 0
+          const pct = avancePlazo(objetivos, plazo)
 
           return (
             <button
@@ -232,7 +234,7 @@ export function ActividadesTabs({ plazos, colorHex }: ActividadesTabsProps) {
                     <li key={logro.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                       <Check size={13} style={{ color: 'var(--color-estado-completado)', flexShrink: 0, marginTop: 2 }} />
                       <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                        {logro.texto}
+                        {logro.titulo}
                       </span>
                     </li>
                   ))}
@@ -251,7 +253,7 @@ export function ActividadesTabs({ plazos, colorHex }: ActividadesTabsProps) {
                     <li key={paso.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                       <ArrowRight size={13} style={{ color: 'var(--color-estado-en-progreso)', flexShrink: 0, marginTop: 2 }} />
                       <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                        {paso.texto}
+                        {paso.titulo}
                       </span>
                     </li>
                   ))}

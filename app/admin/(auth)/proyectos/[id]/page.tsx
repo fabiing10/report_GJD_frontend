@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getProyectoEditable } from '@/lib/db/admin-queries'
+import { getProyectoEditable, getAllEjes } from '@/lib/db/admin-queries'
 import { ProyectoEditor } from '@/components/admin/ProyectoEditor'
 
 export default async function Page({
@@ -8,11 +8,11 @@ export default async function Page({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const detalle = await getProyectoEditable(id)
+  const [detalle, ejes] = await Promise.all([getProyectoEditable(id), getAllEjes()])
 
   if (!detalle) {
     notFound()
   }
 
-  return <ProyectoEditor proyecto={detalle} />
+  return <ProyectoEditor proyecto={detalle} ejesDisponibles={ejes} />
 }

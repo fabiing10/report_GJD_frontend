@@ -2,49 +2,46 @@ import type {
   InformeConAvance,
   ComponenteConAvance,
   ProyectoConAvance,
-  PlazoConAvance,
-  Criterio,
-  ProyectoRecurso,
+  Objetivo,
   Actividad,
+  ProyectoRecurso,
   InformeConRelaciones,
   ProyectoDetalle,
-  PlazoDetalle,
+  ObjetivoDetalle,
 } from '@/types/domain'
 
 const byOrden = <T extends { orden: number }>(a: T, b: T) => a.orden - b.orden
 
 /**
- * Arma el árbol anidado del informe a partir de filas planas de cada tabla/vista.
- * Pura: no toca red. El avance ya viene calculado por las vistas SQL.
+ * Arma el árbol del informe a partir de filas planas.
+ * Pura. El avance ya viene calculado por las vistas SQL.
  */
 export function assembleInforme(
   informe: InformeConAvance,
   componentes: ComponenteConAvance[],
   proyectos: ProyectoConAvance[],
-  plazos: PlazoConAvance[],
-  criterios: Criterio[],
-  recursos: ProyectoRecurso[],
-  actividades: Actividad[]
+  objetivos: Objetivo[],
+  actividades: Actividad[],
+  recursos: ProyectoRecurso[]
 ): InformeConRelaciones {
-  const criteriosPorPlazo = groupBy(criterios, (c) => c.proyecto_plazo_id)
-  const plazosPorProyecto = groupBy(plazos, (p) => p.proyecto_id)
+  const actividadesPorObjetivo = groupBy(actividades, (a) => a.objetivo_id)
+  const objetivosPorProyecto = groupBy(objetivos, (o) => o.proyecto_id)
   const recursosPorProyecto = groupBy(recursos, (r) => r.proyecto_id)
-  const actividadesPorProyecto = groupBy(actividades, (a) => a.proyecto_id)
   const proyectosPorComponente = groupBy(proyectos, (p) => p.componente_id)
 
   const buildProyecto = (p: ProyectoConAvance): ProyectoDetalle => {
-    const plazosDetalle: PlazoDetalle[] = (plazosPorProyecto.get(p.id) ?? [])
+    const objetivosDetalle: ObjetivoDetalle[] = (objetivosPorProyecto.get(p.id) ?? [])
       .slice()
       .sort(byOrden)
-      .map((pl) => ({
-        ...pl,
-        criterios: (criteriosPorPlazo.get(pl.id) ?? []).slice().sort(byOrden),
+      .map((o) => ({
+        ...o,
+        actividades: (actividadesPorObjetivo.get(o.id) ?? []).slice().sort(byOrden),
       }))
     return {
       ...p,
-      plazos: plazosDetalle,
+      objetivos: objetivosDetalle,
       recursos: (recursosPorProyecto.get(p.id) ?? []).slice().sort(byOrden),
-      actividades: (actividadesPorProyecto.get(p.id) ?? []).slice().sort(byOrden),
+      ejes: [],
     }
   }
 

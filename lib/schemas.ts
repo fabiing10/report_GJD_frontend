@@ -8,7 +8,8 @@ const ESTADO = z.enum([
   'refinamiento',
   'bloqueado',
 ])
-const CRITERIO_ESTADO = z.enum(['pendiente', 'en_progreso', 'cumplido'])
+const OBJETIVO_TIPO = z.enum(['hu', 'funcionalidad'])
+const OBJETIVO_ESTADO = z.enum(['pendiente', 'en_progreso', 'cumplido'])
 const ACTIVIDAD_TIPO = z.enum(['reunion', 'tarea', 'investigacion', 'informe'])
 const ACTIVIDAD_ESTADO = z.enum(['pendiente', 'en_progreso', 'completada'])
 const RECURSO_TIPO = z.enum(['video_url', 'imagen', 'link'])
@@ -45,20 +46,14 @@ export const proyectoSchema = z.object({
   avance_override: z.number().min(0).max(100).nullable(),
 })
 
-export const plazoSchema = z.object({
+export const objetivoSchema = z.object({
   proyecto_id: z.string().min(1),
-  plazo: PLAZO,
-  fecha_inicio: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-  fecha_fin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
-  avance_override: z.number().min(0).max(100).nullable(),
-})
-
-export const criterioSchema = z.object({
-  proyecto_plazo_id: z.string().min(1),
-  texto: z.string().min(1, 'Requerido').max(500),
+  titulo: z.string().min(1, 'Requerido').max(500),
   descripcion: z.string().nullable(),
+  tipo: OBJETIVO_TIPO,
+  plazo: PLAZO,
+  estado: OBJETIVO_ESTADO,
   peso: z.number().min(0).max(1000),
-  estado: CRITERIO_ESTADO,
 })
 
 export const recursoSchema = z.object({
@@ -71,14 +66,18 @@ export const recursoSchema = z.object({
 })
 
 export const actividadSchema = z.object({
-  proyecto_id: z.string().min(1),
-  proyecto_plazo_id: z.string().nullable(),
+  objetivo_id: z.string().min(1),
   tipo: ACTIVIDAD_TIPO,
   titulo: z.string().min(1, 'Requerido').max(300),
   descripcion: z.string().nullable(),
   fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
   estado: ACTIVIDAD_ESTADO,
   responsable: z.string().max(200).nullable(),
+})
+
+export const ejeSchema = z.object({
+  nombre: z.string().min(1, 'Requerido').max(200),
+  color_hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color hex'),
 })
 
 export const crearUsuarioSchema = z.object({
@@ -95,8 +94,8 @@ export const cambiarRolSchema = z.object({
 export type InformeFormValues = z.infer<typeof informeSchema>
 export type ComponenteFormValues = z.infer<typeof componenteSchema>
 export type ProyectoFormValues = z.infer<typeof proyectoSchema>
-export type PlazoFormValues = z.infer<typeof plazoSchema>
-export type CriterioFormValues = z.infer<typeof criterioSchema>
+export type ObjetivoFormValues = z.infer<typeof objetivoSchema>
 export type RecursoFormValues = z.infer<typeof recursoSchema>
 export type ActividadFormValues = z.infer<typeof actividadSchema>
+export type EjeFormValues = z.infer<typeof ejeSchema>
 export type CrearUsuarioFormValues = z.infer<typeof crearUsuarioSchema>

@@ -40,8 +40,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 
 const validInput = {
-  proyecto_id: 'proy-1',
-  proyecto_plazo_id: null,
+  objetivo_id: 'obj-1',
   tipo: 'reunion' as const,
   titulo: 'Reunión de arranque',
   descripcion: 'Kickoff con el equipo',
@@ -66,8 +65,7 @@ describe('crearActividad', () => {
     expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(insertSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        proyecto_id: 'proy-1',
-        proyecto_plazo_id: null,
+        objetivo_id: 'obj-1',
         tipo: 'reunion',
         titulo: 'Reunión de arranque',
         estado: 'pendiente',

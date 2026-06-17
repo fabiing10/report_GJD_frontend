@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { PlazoCriterios } from './PlazoCriterios'
-import type { PlazoDetalle } from '@/types/domain'
+import { ObjetivosPorPlazo } from './PlazoCriterios'
+import type { ObjetivoDetalle } from '@/types/domain'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
@@ -11,61 +11,58 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }))
 
-vi.mock('@/lib/actions/plazos', () => ({
-  crearPlazo: vi.fn(),
-  actualizarPlazo: vi.fn(),
-  eliminarPlazo: vi.fn(),
+vi.mock('@/lib/actions/objetivos', () => ({
+  crearObjetivo: vi.fn(),
+  actualizarObjetivo: vi.fn(),
+  eliminarObjetivo: vi.fn(),
+  reordenarObjetivos: vi.fn(),
 }))
 
-vi.mock('@/lib/actions/criterios', () => ({
-  crearCriterio: vi.fn(),
-  actualizarCriterio: vi.fn(),
-  eliminarCriterio: vi.fn(),
-  reordenarCriterios: vi.fn(),
-}))
+const objetivos: ObjetivoDetalle[] = [
+  {
+    id: 'obj-1',
+    proyecto_id: 'p-1',
+    titulo: 'Definir esquema de datos',
+    descripcion: null,
+    tipo: 'hu',
+    plazo: 'corto',
+    estado: 'en_progreso',
+    peso: 1,
+    orden: 0,
+    created_at: '',
+    updated_at: '',
+    actividades: [],
+  },
+]
 
-const plazo: PlazoDetalle = {
-  id: 'pl-1',
-  proyecto_id: 'p-1',
-  plazo: 'corto',
-  fecha_inicio: null,
-  fecha_fin: null,
-  avance_override: null,
-  orden: 0,
-  avance_calculado: 50,
-  total_criterios: 1,
-  criterios_cumplidos: 0,
-  criterios: [
-    {
-      id: 'cr-1',
-      proyecto_plazo_id: 'pl-1',
-      texto: 'Definir esquema de datos',
-      descripcion: null,
-      peso: 1,
-      estado: 'en_progreso',
-      orden: 0,
-      created_at: '',
-      updated_at: '',
-    },
-  ],
-}
-
-describe('PlazoCriterios', () => {
-  it('renderiza el texto del criterio y el avance del plazo', () => {
-    render(<PlazoCriterios plazo={plazo} proyectoId="p-1" />)
-    expect(screen.getByText('Definir esquema de datos')).toBeInTheDocument()
-    expect(screen.getByText(/50%/)).toBeInTheDocument()
+describe('ObjetivosPorPlazo', () => {
+  it('renderiza el título del objetivo del grupo', () => {
+    render(
+      <ObjetivosPorPlazo proyectoId="p-1" plazo="corto" objetivos={objetivos} />
+    )
+    expect(screen.getByDisplayValue('Definir esquema de datos')).toBeInTheDocument()
   })
 
-  it('renderiza el control para agregar un criterio', () => {
-    render(<PlazoCriterios plazo={plazo} proyectoId="p-1" />)
+  it('renderiza el control para agregar un objetivo', () => {
+    render(
+      <ObjetivosPorPlazo proyectoId="p-1" plazo="corto" objetivos={objetivos} />
+    )
     expect(
-      screen.getByRole('button', { name: /criterio/i })
+      screen.getByRole('button', { name: /objetivo/i })
     ).toBeInTheDocument()
   })
 
-  it('muestra la etiqueta del plazo', () => {
-    render(<PlazoCriterios plazo={plazo} proyectoId="p-1" />)
-    expect(screen.getByText(/corto/i)).toBeInTheDocument()
+  it('muestra la etiqueta del plazo del grupo', () => {
+    render(
+      <ObjetivosPorPlazo proyectoId="p-1" plazo="corto" objetivos={objetivos} />
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Corto plazo' })
+    ).toBeInTheDocument()
+  })
+
+  it('muestra un estado vacío cuando el grupo no tiene objetivos', () => {
+    render(<ObjetivosPorPlazo proyectoId="p-1" plazo="mediano" objetivos={[]} />)
+    expect(screen.getByText(/sin objetivos todavía/i)).toBeInTheDocument()
   })
 })

@@ -8,7 +8,8 @@ export type EstadoEnum =
   | 'no_iniciado'
   | 'refinamiento'
   | 'bloqueado'
-export type CriterioEstadoEnum = 'pendiente' | 'en_progreso' | 'cumplido'
+export type ObjetivoTipoEnum = 'hu' | 'funcionalidad'
+export type ObjetivoEstadoEnum = 'pendiente' | 'en_progreso' | 'cumplido'
 export type ActividadTipoEnum = 'reunion' | 'tarea' | 'investigacion' | 'informe'
 export type ActividadEstadoEnum = 'pendiente' | 'en_progreso' | 'completada'
 export type RecursoTipoEnum = 'video_url' | 'imagen' | 'link'
@@ -68,23 +69,15 @@ export interface Proyecto {
   updated_at: string
 }
 
-export interface ProyectoPlazo {
+export interface Objetivo {
   id: string
   proyecto_id: string
-  plazo: PlazoEnum
-  fecha_inicio: string | null
-  fecha_fin: string | null
-  avance_override: number | null
-  orden: number
-}
-
-export interface Criterio {
-  id: string
-  proyecto_plazo_id: string
-  texto: string
+  titulo: string
   descripcion: string | null
+  tipo: ObjetivoTipoEnum
+  plazo: PlazoEnum
+  estado: ObjetivoEstadoEnum
   peso: number
-  estado: CriterioEstadoEnum
   orden: number
   created_at: string
   updated_at: string
@@ -92,8 +85,7 @@ export interface Criterio {
 
 export interface Actividad {
   id: string
-  proyecto_id: string
-  proyecto_plazo_id: string | null
+  objetivo_id: string
   tipo: ActividadTipoEnum
   titulo: string
   descripcion: string | null
@@ -103,6 +95,13 @@ export interface Actividad {
   orden: number
   created_at: string
   updated_at: string
+}
+
+export interface EjeTransversal {
+  id: string
+  nombre: string
+  color_hex: string
+  orden: number
 }
 
 export interface ProyectoRecurso {
@@ -117,17 +116,10 @@ export interface ProyectoRecurso {
 }
 
 // ── Tipos de vistas (avance calculado) ─────────────────────
-export interface PlazoConAvance extends ProyectoPlazo {
-  avance_calculado: number
-  total_criterios: number
-  criterios_cumplidos: number
-}
-
 export interface ProyectoConAvance extends Proyecto {
   avance_calculado: number
-  total_plazos: number
-  total_criterios: number
-  criterios_cumplidos: number
+  total_objetivos: number
+  objetivos_cumplidos: number
 }
 
 export interface ComponenteConAvance extends Componente {
@@ -141,14 +133,14 @@ export interface InformeConAvance extends Informe {
 }
 
 // ── Tipos compuestos para páginas ──────────────────────────
-export interface PlazoDetalle extends PlazoConAvance {
-  criterios: Criterio[]
+export interface ObjetivoDetalle extends Objetivo {
+  actividades: Actividad[]
 }
 
 export interface ProyectoDetalle extends ProyectoConAvance {
-  plazos: PlazoDetalle[]
+  objetivos: ObjetivoDetalle[]
   recursos: ProyectoRecurso[]
-  actividades: Actividad[]
+  ejes: EjeTransversal[]
 }
 
 export interface ComponenteConProyectos extends ComponenteConAvance {
@@ -160,12 +152,6 @@ export interface InformeConRelaciones extends InformeConAvance {
 }
 
 // ── Inputs para mutations del admin ────────────────────────
-export type ProyectoInput = Omit<
-  Proyecto,
-  'id' | 'created_at' | 'updated_at'
->
-export type ComponenteInput = Omit<
-  Componente,
-  'id' | 'created_at' | 'updated_at'
->
+export type ProyectoInput = Omit<Proyecto, 'id' | 'created_at' | 'updated_at'>
+export type ComponenteInput = Omit<Componente, 'id' | 'created_at' | 'updated_at'>
 export type InformeInput = Omit<Informe, 'id' | 'created_at' | 'updated_at'>

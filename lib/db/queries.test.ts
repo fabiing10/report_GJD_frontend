@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Fake query builder: encadena select/eq/in/maybeSingle y es awaitable.
 function makeSupabase(tables: Record<string, unknown[]>) {
   return {
     from(table: string) {
@@ -30,26 +29,21 @@ describe('getInformeActivo', () => {
     expect(await getInformeActivo()).toBeNull()
   })
 
-  it('ensambla el árbol cuando hay informe activo', async () => {
+  it('ensambla el árbol con objetivos y actividades', async () => {
     createClient.mockResolvedValue(
       makeSupabase({
-        v_informes_con_avance: [
-          { id: 'i1', titulo: 'T', is_active: true, avance_global_calculado: 30 },
-        ],
-        v_componentes_con_avance: [
-          { id: 'c1', informe_id: 'i1', slug: 'comp', orden: 0, avance_calculado: 50 },
-        ],
-        v_proyectos_con_avance: [
-          { id: 'p1', componente_id: 'c1', slug: 'proy', orden: 0, avance_calculado: 50 },
-        ],
-        v_plazos_con_avance: [{ id: 'pl1', proyecto_id: 'p1', plazo: 'corto', orden: 0 }],
-        criterios: [{ id: 'cr1', proyecto_plazo_id: 'pl1', orden: 0, estado: 'cumplido' }],
+        v_informes_con_avance: [{ id: 'i1', titulo: 'T', is_active: true, avance_global_calculado: 30 }],
+        v_componentes_con_avance: [{ id: 'c1', informe_id: 'i1', slug: 'comp', orden: 0, avance_calculado: 50 }],
+        v_proyectos_con_avance: [{ id: 'p1', componente_id: 'c1', slug: 'proy', orden: 0, avance_calculado: 50 }],
+        objetivos: [{ id: 'o1', proyecto_id: 'p1', plazo: 'corto', tipo: 'hu', estado: 'cumplido', peso: 1, orden: 0 }],
+        actividades: [{ id: 'a1', objetivo_id: 'o1', tipo: 'reunion', orden: 0 }],
         proyecto_recursos: [],
-        actividades: [],
       })
     )
     const { getInformeActivo } = await import('./queries')
     const informe = await getInformeActivo()
-    expect(informe?.componentes[0]?.proyectos[0]?.plazos[0]?.criterios[0]?.id).toBe('cr1')
+    const proyecto = informe?.componentes[0]?.proyectos[0]
+    expect(proyecto?.objetivos[0]?.id).toBe('o1')
+    expect(proyecto?.objetivos[0]?.actividades[0]?.id).toBe('a1')
   })
 })

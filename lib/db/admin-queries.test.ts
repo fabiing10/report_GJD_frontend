@@ -31,18 +31,20 @@ describe('admin-queries', () => {
     expect(r.map((x) => x.id)).toEqual(['i1'])
   })
 
-  it('getProyectoEditable ensambla plazos y criterios', async () => {
+  it('getProyectoEditable ensambla objetivos con actividades y ejes', async () => {
     createClient.mockResolvedValue(
       makeSupabase({
         v_proyectos_con_avance: [{ id: 'p1', nombre: 'P', componente_id: 'c1' }],
-        v_plazos_con_avance: [{ id: 'pl1', proyecto_id: 'p1', plazo: 'corto', orden: 0 }],
-        criterios: [{ id: 'cr1', proyecto_plazo_id: 'pl1', orden: 0 }],
+        objetivos: [{ id: 'o1', proyecto_id: 'p1', plazo: 'corto', tipo: 'hu', estado: 'cumplido', peso: 1, orden: 0 }],
+        actividades: [{ id: 'a1', objetivo_id: 'o1', orden: 0 }],
         proyecto_recursos: [],
-        actividades: [],
+        proyecto_ejes: [{ ejes_transversales: { id: 'e1', nombre: 'IA', color_hex: '#000', orden: 0 } }],
       })
     )
     const { getProyectoEditable } = await import('./admin-queries')
     const p = await getProyectoEditable('p1')
-    expect(p?.plazos[0]?.criterios[0]?.id).toBe('cr1')
+    expect(p?.objetivos[0]?.id).toBe('o1')
+    expect(p?.objetivos[0]?.actividades[0]?.id).toBe('a1')
+    expect(p?.ejes[0]?.nombre).toBe('IA')
   })
 })

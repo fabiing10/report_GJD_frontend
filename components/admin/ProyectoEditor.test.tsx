@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { ProyectoEditor } from './ProyectoEditor'
-import type { ProyectoDetalle } from '@/types/domain'
+import type { ProyectoDetalle, EjeTransversal } from '@/types/domain'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
@@ -15,17 +15,16 @@ vi.mock('@/lib/actions/proyectos', () => ({
   actualizarProyecto: vi.fn(),
 }))
 
-vi.mock('@/lib/actions/plazos', () => ({
-  crearPlazo: vi.fn(),
-  actualizarPlazo: vi.fn(),
-  eliminarPlazo: vi.fn(),
+vi.mock('@/lib/actions/objetivos', () => ({
+  crearObjetivo: vi.fn(),
+  actualizarObjetivo: vi.fn(),
+  eliminarObjetivo: vi.fn(),
+  reordenarObjetivos: vi.fn(),
 }))
 
-vi.mock('@/lib/actions/criterios', () => ({
-  crearCriterio: vi.fn(),
-  actualizarCriterio: vi.fn(),
-  eliminarCriterio: vi.fn(),
-  reordenarCriterios: vi.fn(),
+vi.mock('@/lib/actions/ejes', () => ({
+  asignarEjeProyecto: vi.fn(),
+  quitarEjeProyecto: vi.fn(),
 }))
 
 vi.mock('@/lib/actions/recursos', () => ({
@@ -51,34 +50,22 @@ const proyecto: ProyectoDetalle = {
   created_at: '',
   updated_at: '',
   avance_calculado: 67,
-  total_plazos: 1,
-  total_criterios: 1,
-  criterios_cumplidos: 0,
-  plazos: [
+  total_objetivos: 1,
+  objetivos_cumplidos: 0,
+  objetivos: [
     {
-      id: 'pl-1',
+      id: 'obj-1',
       proyecto_id: 'p-1',
+      titulo: 'Definir esquema',
+      descripcion: null,
+      tipo: 'hu',
       plazo: 'corto',
-      fecha_inicio: null,
-      fecha_fin: null,
-      avance_override: null,
+      estado: 'en_progreso',
+      peso: 1,
       orden: 0,
-      avance_calculado: 67,
-      total_criterios: 1,
-      criterios_cumplidos: 0,
-      criterios: [
-        {
-          id: 'cr-1',
-          proyecto_plazo_id: 'pl-1',
-          texto: 'Definir esquema',
-          descripcion: null,
-          peso: 1,
-          estado: 'en_progreso',
-          orden: 0,
-          created_at: '',
-          updated_at: '',
-        },
-      ],
+      created_at: '',
+      updated_at: '',
+      actividades: [],
     },
   ],
   recursos: [
@@ -93,27 +80,46 @@ const proyecto: ProyectoDetalle = {
       orden: 0,
     },
   ],
-  actividades: [],
+  ejes: [
+    { id: 'eje-1', nombre: 'Seguridad', color_hex: '#112233', orden: 0 },
+  ],
 }
+
+const ejesDisponibles: EjeTransversal[] = [
+  { id: 'eje-1', nombre: 'Seguridad', color_hex: '#112233', orden: 0 },
+  { id: 'eje-2', nombre: 'Datos abiertos', color_hex: '#445566', orden: 1 },
+]
 
 describe('ProyectoEditor', () => {
   it('renderiza el nombre del proyecto y su avance', () => {
-    render(<ProyectoEditor proyecto={proyecto} />)
-    expect(
-      screen.getByDisplayValue('Catálogo de datos')
-    ).toBeInTheDocument()
+    render(<ProyectoEditor proyecto={proyecto} ejesDisponibles={ejesDisponibles} />)
+    expect(screen.getByDisplayValue('Catálogo de datos')).toBeInTheDocument()
     expect(screen.getAllByText(/67%/).length).toBeGreaterThan(0)
   })
 
-  it('renderiza las secciones de datos, plazos y recursos', () => {
-    render(<ProyectoEditor proyecto={proyecto} />)
+  it('renderiza las secciones de datos, objetivos, ejes y recursos', () => {
+    render(<ProyectoEditor proyecto={proyecto} ejesDisponibles={ejesDisponibles} />)
     expect(screen.getByText('Datos del proyecto')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Plazos' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Objetivos' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Ejes transversales' })
+    ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Recursos' })).toBeInTheDocument()
   })
 
-  it('renderiza el plazo y su criterio existente', () => {
-    render(<ProyectoEditor proyecto={proyecto} />)
-    expect(screen.getByText('Definir esquema')).toBeInTheDocument()
+  it('agrupa los objetivos por plazo y muestra el objetivo existente bajo su grupo', () => {
+    render(<ProyectoEditor proyecto={proyecto} ejesDisponibles={ejesDisponibles} />)
+    expect(screen.getByRole('heading', { name: 'Corto plazo' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Mediano plazo' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Largo plazo' })).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Definir esquema')).toBeInTheDocument()
+  })
+
+  it('lista los ejes asignados al proyecto', () => {
+    render(<ProyectoEditor proyecto={proyecto} ejesDisponibles={ejesDisponibles} />)
+    expect(screen.getByText('Seguridad')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /quitar seguridad/i })
+    ).toBeInTheDocument()
   })
 })

@@ -7,6 +7,7 @@ const notFound = vi.fn(() => {
 
 vi.mock('@/lib/db/admin-queries', () => ({
   getProyectoEditable: (id: string) => getProyectoEditable(id),
+  getAllEjes: () => Promise.resolve([]),
 }))
 
 vi.mock('next/navigation', () => ({

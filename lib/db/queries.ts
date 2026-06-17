@@ -7,13 +7,12 @@ import type {
   InformeConAvance,
   ComponenteConAvance,
   ProyectoConAvance,
-  PlazoConAvance,
-  Criterio,
-  ProyectoRecurso,
+  Objetivo,
   Actividad,
+  ProyectoRecurso,
 } from '@/types/domain'
 
-/** Informe activo con todo su árbol (componentes→proyectos→plazos→criterios). */
+/** Informe activo con todo su árbol (componentes→proyectos→objetivos→actividades). */
 export async function getInformeActivo(): Promise<InformeConRelaciones | null> {
   const supabase = await createClient()
 
@@ -38,28 +37,25 @@ export async function getInformeActivo(): Promise<InformeConRelaciones | null> {
   const proys = (proyectos ?? []) as ProyectoConAvance[]
   const proyIds = proys.map((p) => p.id)
 
-  const { data: plazos } = await supabase
-    .from('v_plazos_con_avance')
+  const { data: objetivos } = await supabase
+    .from('objetivos')
     .select('*')
     .in('proyecto_id', proyIds)
-  const plzs = (plazos ?? []) as PlazoConAvance[]
-  const plazoIds = plzs.map((p) => p.id)
+  const objs = (objetivos ?? []) as Objetivo[]
+  const objIds = objs.map((o) => o.id)
 
-  const [{ data: criterios }, { data: recursos }, { data: actividades }] =
-    await Promise.all([
-      supabase.from('criterios').select('*').in('proyecto_plazo_id', plazoIds),
-      supabase.from('proyecto_recursos').select('*').in('proyecto_id', proyIds),
-      supabase.from('actividades').select('*').in('proyecto_id', proyIds),
-    ])
+  const [{ data: actividades }, { data: recursos }] = await Promise.all([
+    supabase.from('actividades').select('*').in('objetivo_id', objIds),
+    supabase.from('proyecto_recursos').select('*').in('proyecto_id', proyIds),
+  ])
 
   return assembleInforme(
     informe as InformeConAvance,
     comps,
     proys,
-    plzs,
-    (criterios ?? []) as Criterio[],
-    (recursos ?? []) as ProyectoRecurso[],
-    (actividades ?? []) as Actividad[]
+    objs,
+    (actividades ?? []) as Actividad[],
+    (recursos ?? []) as ProyectoRecurso[]
   )
 }
 

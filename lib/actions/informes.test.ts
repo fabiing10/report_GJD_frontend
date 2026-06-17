@@ -154,12 +154,10 @@ describe('activarInforme', () => {
 
 describe('duplicarInforme', () => {
   it('crea un informe (copia) inactivo y re-inserta la jerarquía', async () => {
-    // Programa respuestas por tabla/operación en orden de invocación.
-    // El orden de from() en duplicar: informes(select origen),
-    // componentes(select), proyectos(select), proyecto_plazos(select),
-    // criterios(select), proyecto_recursos(select),
-    // informes(insert copia), componentes(insert), proyectos(insert),
-    // proyecto_plazos(insert), criterios(insert), proyecto_recursos(insert)
+    // Orden de from() en duplicar: informes(select origen),
+    // componentes(select), proyectos(select), objetivos(select),
+    // proyecto_recursos(select), informes(insert copia), componentes(insert),
+    // proyectos(insert), objetivos(insert), proyecto_recursos(insert)
     const origen = {
       id: 'old-inf',
       titulo: 'Original',
@@ -170,22 +168,19 @@ describe('duplicarInforme', () => {
     }
     const comps = [{ id: 'c1', informe_id: 'old-inf', slug: 'a', nombre: 'C1', descripcion: null, icono: 'x', color_hex: '#000000', color_token: 't', orden: 0, avance_override: null }]
     const proys = [{ id: 'p1', componente_id: 'c1', slug: 'p', codigo: null, nombre: 'P1', descripcion_corta: null, descripcion_larga: null, estado: 'no_iniciado', avance_override: null, responsable: null, fecha_inicio: null, fecha_fin: null, orden: 0 }]
-    const plazos = [{ id: 'pl1', proyecto_id: 'p1', plazo: 'corto', fecha_inicio: null, fecha_fin: null, avance_override: null, orden: 0 }]
-    const crits = [{ id: 'cr1', proyecto_plazo_id: 'pl1', texto: 't', descripcion: null, peso: 1, estado: 'pendiente', orden: 0 }]
+    const objs = [{ id: 'o1', proyecto_id: 'p1', titulo: 'O1', descripcion: null, tipo: 'hu', plazo: 'corto', estado: 'pendiente', peso: 1, orden: 0 }]
     const recs = [{ id: 'r1', proyecto_id: 'p1', tipo: 'link', titulo: null, url: 'u', thumbnail_url: null, duracion_segundos: null, orden: 0 }]
 
     const queue: Result[] = [
       { data: origen, error: null }, // select informe origen (single)
       { data: comps, error: null }, // select componentes
       { data: proys, error: null }, // select proyectos
-      { data: plazos, error: null }, // select plazos
-      { data: crits, error: null }, // select criterios
+      { data: objs, error: null }, // select objetivos
       { data: recs, error: null }, // select recursos
       { data: { id: 'new-inf' }, error: null }, // insert informe copia (single)
       { data: [{ id: 'new-c1' }], error: null }, // insert componentes (select)
       { data: [{ id: 'new-p1' }], error: null }, // insert proyectos (select)
-      { data: [{ id: 'new-pl1' }], error: null }, // insert plazos (select)
-      { data: null, error: null }, // insert criterios
+      { data: null, error: null }, // insert objetivos
       { data: null, error: null }, // insert recursos
     ]
     let i = 0
@@ -214,8 +209,8 @@ describe('duplicarInforme', () => {
       .map((x) => x.table)
     expect(insertedTables).toContain('componentes')
     expect(insertedTables).toContain('proyectos')
-    expect(insertedTables).toContain('proyecto_plazos')
-    expect(insertedTables).toContain('criterios')
+    expect(insertedTables).toContain('objetivos')
+    expect(insertedTables).toContain('proyecto_recursos')
 
     expect(revalidatePath).toHaveBeenCalledWith('/admin/informes')
   })

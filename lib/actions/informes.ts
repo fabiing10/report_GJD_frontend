@@ -79,22 +79,13 @@ export async function duplicarInforme(id: string) {
   const proys = proyectos ?? []
   const proyIds = proys.map((p) => p.id)
 
-  const { data: plazos, error: plazoError } = await supabase
-    .from('proyecto_plazos')
+  const { data: objetivos, error: objError } = await supabase
+    .from('objetivos')
     .select('*')
     .in('proyecto_id', proyIds.length ? proyIds : ['__none__'])
     .order('orden')
-  if (plazoError) throw new Error(plazoError.message)
-  const plzs = plazos ?? []
-  const plazoIds = plzs.map((pl) => pl.id)
-
-  const { data: criterios, error: critError } = await supabase
-    .from('criterios')
-    .select('*')
-    .in('proyecto_plazo_id', plazoIds.length ? plazoIds : ['__none__'])
-    .order('orden')
-  if (critError) throw new Error(critError.message)
-  const crits = criterios ?? []
+  if (objError) throw new Error(objError.message)
+  const objs = objetivos ?? []
 
   const { data: recursos, error: recError } = await supabase
     .from('proyecto_recursos')
@@ -171,37 +162,18 @@ export async function duplicarInforme(id: string) {
     })
   }
 
-  const plazoIdMap = new Map<string, string>()
-  if (plzs.length) {
-    const payload = plzs.map((pl) => ({
-      proyecto_id: proyIdMap.get(pl.proyecto_id) ?? pl.proyecto_id,
-      plazo: pl.plazo,
-      fecha_inicio: pl.fecha_inicio,
-      fecha_fin: pl.fecha_fin,
-      avance_override: pl.avance_override,
-      orden: pl.orden,
+  if (objs.length) {
+    const payload = objs.map((o) => ({
+      proyecto_id: proyIdMap.get(o.proyecto_id) ?? o.proyecto_id,
+      titulo: o.titulo,
+      descripcion: o.descripcion,
+      tipo: o.tipo,
+      plazo: o.plazo,
+      estado: o.estado,
+      peso: o.peso,
+      orden: o.orden,
     }))
-    const { data: inserted, error } = await supabase
-      .from('proyecto_plazos')
-      .insert(payload)
-      .select()
-    if (error) throw new Error(error.message)
-    ;(inserted ?? []).forEach((row, idx) => {
-      const oldId = plzs[idx]?.id
-      if (oldId) plazoIdMap.set(oldId, row.id as string)
-    })
-  }
-
-  if (crits.length) {
-    const payload = crits.map((c) => ({
-      proyecto_plazo_id: plazoIdMap.get(c.proyecto_plazo_id) ?? c.proyecto_plazo_id,
-      texto: c.texto,
-      descripcion: c.descripcion,
-      peso: c.peso,
-      estado: c.estado,
-      orden: c.orden,
-    }))
-    const { error } = await supabase.from('criterios').insert(payload)
+    const { error } = await supabase.from('objetivos').insert(payload)
     if (error) throw new Error(error.message)
   }
 

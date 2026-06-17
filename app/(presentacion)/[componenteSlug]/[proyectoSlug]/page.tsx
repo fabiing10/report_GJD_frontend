@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Check, ArrowRight } from 'lucide-react'
 import { getComponente } from '@/lib/db/queries'
-import { criteriosDeProyecto, logros, proximosPasos } from '@/lib/criterios'
+import { logros, proximosPasos } from '@/lib/objetivos'
 import { ProgressRing } from '@/components/presentacion/ProgressRing'
 import { EstadoBadge } from '@/components/presentacion/EstadoBadge'
 import { Breadcrumbs } from '@/components/presentacion/Breadcrumbs'
@@ -29,9 +29,8 @@ export default async function ProyectoPage({ params }: Props) {
       ? componente.proyectos[proyectoIndex + 1]!
       : null
 
-  const criterios = criteriosDeProyecto(proyecto.plazos)
-  const logrosProyecto = logros(criterios)
-  const pasosProyecto = proximosPasos(criterios)
+  const logrosProyecto = logros(proyecto.objetivos)
+  const pasosProyecto = proximosPasos(proyecto.objetivos)
 
   return (
     <div className="px-4 pt-4 pb-24 max-w-6xl mx-auto">
@@ -81,7 +80,7 @@ export default async function ProyectoPage({ params }: Props) {
               logrosProyecto.map((l) => (
                 <li key={l.id} className="flex gap-2.5">
                   <Check size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-completado)]" />
-                  <span className="text-sm text-[var(--color-text-secondary)]">{l.texto}</span>
+                  <span className="text-sm text-[var(--color-text-secondary)]">{l.titulo}</span>
                 </li>
               ))
             ) : (
@@ -106,7 +105,7 @@ export default async function ProyectoPage({ params }: Props) {
               pasosProyecto.map((p) => (
                 <li key={p.id} className="flex gap-2.5">
                   <ArrowRight size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-en-progreso)]" />
-                  <span className="text-sm text-[var(--color-text-secondary)]">{p.texto}</span>
+                  <span className="text-sm text-[var(--color-text-secondary)]">{p.titulo}</span>
                 </li>
               ))
             ) : (
@@ -118,7 +117,7 @@ export default async function ProyectoPage({ params }: Props) {
 
       <RecursoVisual recursos={proyecto.recursos} />
 
-      <ActividadesTabs plazos={proyecto.plazos} colorHex={componente.color_hex} />
+      <ActividadesTabs objetivos={proyecto.objetivos} colorHex={componente.color_hex} />
 
       <NavegacionProyectos prev={prev} next={next} componenteSlug={componenteSlug} />
 

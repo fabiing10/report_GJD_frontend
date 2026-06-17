@@ -3,13 +3,13 @@ import type {
   Informe,
   Componente,
   ProyectoConAvance,
-  PlazoConAvance,
-  Criterio,
-  ProyectoRecurso,
+  Objetivo,
   Actividad,
+  ProyectoRecurso,
   ProyectoDetalle,
   Profile,
-  PlazoDetalle,
+  ObjetivoDetalle,
+  EjeTransversal,
 } from '@/types/domain'
 
 const byOrden = <T extends { orden: number }>(a: T, b: T) => a.orden - b.orden
@@ -52,48 +52,71 @@ export async function getProyectoEditable(id: string): Promise<ProyectoDetalle |
     .maybeSingle()
   if (!proyecto) return null
 
-  const { data: plazos } = await supabase
-    .from('v_plazos_con_avance')
+  const { data: objetivos } = await supabase
+    .from('objetivos')
     .select('*')
     .eq('proyecto_id', id)
-  const plzs = (plazos ?? []) as PlazoConAvance[]
-  const plazoIds = plzs.map((p) => p.id)
+  const objs = (objetivos ?? []) as Objetivo[]
+  const objIds = objs.map((o) => o.id)
 
-  const [{ data: criterios }, { data: recursos }, { data: actividades }] =
+  const [{ data: actividades }, { data: recursos }, { data: ejesLink }] =
     await Promise.all([
-      supabase.from('criterios').select('*').in('proyecto_plazo_id', plazoIds),
+      supabase.from('actividades').select('*').in('objetivo_id', objIds),
       supabase.from('proyecto_recursos').select('*').eq('proyecto_id', id),
-      supabase.from('actividades').select('*').eq('proyecto_id', id),
+      supabase.from('proyecto_ejes').select('ejes_transversales(*)').eq('proyecto_id', id),
     ])
 
-  const crits = (criterios ?? []) as Criterio[]
-  const plazosDetalle: PlazoDetalle[] = plzs
+  const acts = (actividades ?? []) as Actividad[]
+  const objetivosDetalle: ObjetivoDetalle[] = objs
     .slice()
     .sort(byOrden)
-    .map((pl) => ({
-      ...pl,
-      criterios: crits.filter((c) => c.proyecto_plazo_id === pl.id).sort(byOrden),
+    .map((o) => ({
+      ...o,
+      actividades: acts.filter((a) => a.objetivo_id === o.id).sort(byOrden),
     }))
+
+  const ejes = (
+    (ejesLink ?? []) as unknown as Array<{
+      ejes_transversales: EjeTransversal | EjeTransversal[] | null
+    }>
+  ).flatMap((e) => {
+    const v = e.ejes_transversales
+    return Array.isArray(v) ? v : v ? [v] : []
+  })
 
   return {
     ...(proyecto as ProyectoConAvance),
-    plazos: plazosDetalle,
+    objetivos: objetivosDetalle,
     recursos: ((recursos ?? []) as ProyectoRecurso[]).slice().sort(byOrden),
-    actividades: ((actividades ?? []) as Actividad[]).slice().sort(byOrden),
+    ejes,
   }
 }
 
 export async function getAllActividades(): Promise<
-  Array<Actividad & { proyecto_nombre: string }>
+  Array<Actividad & { objetivo_titulo: string; proyecto_nombre: string }>
 > {
   const supabase = await createClient()
   const { data } = await supabase
     .from('actividades')
-    .select('*, proyectos(nombre)')
+    .select('*, objetivos(titulo, proyectos(nombre))')
     .order('fecha', { ascending: false })
-  return ((data ?? []) as Array<Actividad & { proyectos: { nombre: string } | null }>).map(
-    (a) => ({ ...a, proyecto_nombre: a.proyectos?.nombre ?? '' })
-  )
+  type Row = Actividad & {
+    objetivos: { titulo: string; proyectos: { nombre: string } | null } | null
+  }
+  return ((data ?? []) as Row[]).map((a) => ({
+    ...a,
+    objetivo_titulo: a.objetivos?.titulo ?? '',
+    proyecto_nombre: a.objetivos?.proyectos?.nombre ?? '',
+  }))
+}
+
+export async function getAllEjes(): Promise<EjeTransversal[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('ejes_transversales')
+    .select('*')
+    .order('orden')
+  return (data ?? []) as EjeTransversal[]
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {

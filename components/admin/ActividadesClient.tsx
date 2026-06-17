@@ -40,10 +40,13 @@ import {
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 
-type ActividadConProyecto = Actividad & { proyecto_nombre: string }
-interface ProyectoOption {
+type ActividadConContexto = Actividad & {
+  objetivo_titulo: string
+  proyecto_nombre: string
+}
+interface ObjetivoOption {
   id: string
-  nombre: string
+  label: string
 }
 
 const TIPOS: { value: ActividadTipoEnum; label: string }[] = [
@@ -72,10 +75,9 @@ const ESTADO_COLOR: Record<ActividadEstadoEnum, string> = {
   completada: 'var(--color-estado-completado)',
 }
 
-function emptyForm(proyectoId: string): ActividadFormValues {
+function emptyForm(objetivoId: string): ActividadFormValues {
   return {
-    proyecto_id: proyectoId,
-    proyecto_plazo_id: null,
+    objetivo_id: objetivoId,
     tipo: 'tarea',
     titulo: '',
     descripcion: null,
@@ -86,7 +88,7 @@ function emptyForm(proyectoId: string): ActividadFormValues {
 }
 
 interface FormProps {
-  proyectos: ProyectoOption[]
+  objetivos: ObjetivoOption[]
   initial: ActividadFormValues
   submitLabel: string
   onSubmit: (values: ActividadFormValues) => Promise<void>
@@ -94,7 +96,7 @@ interface FormProps {
 }
 
 function ActividadForm({
-  proyectos,
+  objetivos,
   initial,
   submitLabel,
   onSubmit,
@@ -124,22 +126,22 @@ function ActividadForm({
   return (
     <div className="space-y-5">
       <Field
-        label="Proyecto"
-        htmlFor="act-proyecto"
-        description="Proyecto al que pertenece la actividad."
+        label="Objetivo"
+        htmlFor="act-objetivo"
+        description="Objetivo (HU/Funcionalidad) al que pertenece la actividad."
         required
       >
         <Select
-          value={values.proyecto_id}
-          onValueChange={(v) => set('proyecto_id', v as string)}
+          value={values.objetivo_id}
+          onValueChange={(v) => set('objetivo_id', v as string)}
         >
-          <SelectTrigger id="act-proyecto" className="w-full">
-            <SelectValue placeholder="Selecciona un proyecto" />
+          <SelectTrigger id="act-objetivo" className="w-full">
+            <SelectValue placeholder="Selecciona un objetivo" />
           </SelectTrigger>
           <SelectContent>
-            {proyectos.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.nombre}
+            {objetivos.map((o) => (
+              <SelectItem key={o.id} value={o.id}>
+                {o.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -252,7 +254,7 @@ function ActividadForm({
         </DialogClose>
         <Button
           size="sm"
-          disabled={saving || !values.proyecto_id || !values.titulo.trim()}
+          disabled={saving || !values.objetivo_id || !values.titulo.trim()}
           onClick={handleSubmit}
         >
           {saving ? '…' : submitLabel}
@@ -263,13 +265,13 @@ function ActividadForm({
 }
 
 interface ActividadesClientProps {
-  actividades: ActividadConProyecto[]
-  proyectos: ProyectoOption[]
+  actividades: ActividadConContexto[]
+  objetivos: ObjetivoOption[]
 }
 
 export function ActividadesClient({
   actividades,
-  proyectos,
+  objetivos,
 }: ActividadesClientProps) {
   const router = useRouter()
   const [createOpen, setCreateOpen] = useState(false)
@@ -278,7 +280,7 @@ export function ActividadesClient({
   const [filtroEstado, setFiltroEstado] = useState<string>('todos')
 
   const refresh = () => router.refresh()
-  const defaultProyecto = proyectos[0]?.id ?? ''
+  const defaultObjetivo = objetivos[0]?.id ?? ''
 
   const visibles = actividades.filter(
     (a) =>
@@ -301,8 +303,8 @@ export function ActividadesClient({
               <DialogTitle>Nueva actividad</DialogTitle>
             </DialogHeader>
             <ActividadForm
-              proyectos={proyectos}
-              initial={emptyForm(defaultProyecto)}
+              objetivos={objetivos}
+              initial={emptyForm(defaultObjetivo)}
               submitLabel="Crear"
               onSubmit={(v) => crearActividad(v)}
               onDone={() => {
@@ -363,6 +365,9 @@ export function ActividadesClient({
                 Proyecto
               </TableHead>
               <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Objetivo
+              </TableHead>
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
                 Tipo
               </TableHead>
               <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
@@ -386,7 +391,7 @@ export function ActividadesClient({
             {visibles.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="px-3 py-8 text-center text-xs text-[var(--color-text-muted)]"
                 >
                   Sin actividades
@@ -401,6 +406,9 @@ export function ActividadesClient({
                 >
                   <TableCell className="px-3 py-2.5 text-[var(--color-text-secondary)]">
                     {a.proyecto_nombre}
+                  </TableCell>
+                  <TableCell className="px-3 py-2.5 whitespace-normal text-[var(--color-text-secondary)]">
+                    {a.objetivo_titulo}
                   </TableCell>
                   <TableCell className="px-3 py-2.5 text-[var(--color-text-muted)]">
                     {TIPO_LABEL[a.tipo]}
@@ -441,10 +449,9 @@ export function ActividadesClient({
                             <DialogTitle>Editar actividad</DialogTitle>
                           </DialogHeader>
                           <ActividadForm
-                            proyectos={proyectos}
+                            objetivos={objetivos}
                             initial={{
-                              proyecto_id: a.proyecto_id,
-                              proyecto_plazo_id: a.proyecto_plazo_id,
+                              objetivo_id: a.objetivo_id,
                               tipo: a.tipo,
                               titulo: a.titulo,
                               descripcion: a.descripcion,

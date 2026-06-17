@@ -45,7 +45,7 @@ async function main() {
     const componenteId = (cRow as { id: string }).id
 
     for (const proy of proyectos) {
-      const { plazo, recursos, ...proyRow } = proy
+      const { objetivos, recursos, ...proyRow } = proy
       const { data: pRow, error: eP } = await db
         .from('proyectos')
         .insert({ ...proyRow, componente_id: componenteId })
@@ -54,20 +54,11 @@ async function main() {
       fail(`proyecto ${proy.slug}`, eP)
       const proyectoId = (pRow as { id: string }).id
 
-      const { criterios, ...plazoRow } = plazo
-      const { data: plRow, error: ePl } = await db
-        .from('proyecto_plazos')
-        .insert({ ...plazoRow, proyecto_id: proyectoId, orden: 0 })
-        .select('id')
-        .single()
-      fail(`plazo ${proy.slug}`, ePl)
-      const plazoId = (plRow as { id: string }).id
-
-      if (criterios.length > 0) {
+      if (objetivos.length > 0) {
         fail(
-          `criterios ${proy.slug}`,
-          (await db.from('criterios').insert(
-            criterios.map((c) => ({ ...c, proyecto_plazo_id: plazoId }))
+          `objetivos ${proy.slug}`,
+          (await db.from('objetivos').insert(
+            objetivos.map((o) => ({ ...o, proyecto_id: proyectoId }))
           )).error
         )
       }

@@ -1,7 +1,8 @@
 import type {
   PlazoEnum,
   EstadoEnum,
-  CriterioEstadoEnum,
+  ObjetivoTipoEnum,
+  ObjetivoEstadoEnum,
   RecursoTipoEnum,
 } from '@/types/domain'
 
@@ -31,16 +32,13 @@ interface RawData {
 }
 
 // ── Plan de inserción (salida) ─────────────────────────────
-export interface CriterioPlan {
-  texto: string
-  estado: CriterioEstadoEnum
+export interface ObjetivoPlan {
+  titulo: string
+  tipo: ObjetivoTipoEnum
+  plazo: PlazoEnum
+  estado: ObjetivoEstadoEnum
   peso: number
   orden: number
-}
-export interface PlazoPlan {
-  plazo: PlazoEnum
-  avance_override: number | null
-  criterios: CriterioPlan[]
 }
 export interface RecursoPlan {
   tipo: RecursoTipoEnum
@@ -56,7 +54,7 @@ export interface ProyectoPlan {
   estado: EstadoEnum
   avance_override: number | null
   orden: number
-  plazo: PlazoPlan
+  objetivos: ObjetivoPlan[]
   recursos: RecursoPlan[]
 }
 export interface ComponentePlan {
@@ -107,16 +105,21 @@ export function mapDataToPlan(data: RawData): SeedPlan {
     color_token: cat.id,
     orden: ci,
     proyectos: (cat.activities ?? []).map((act, pi) => {
-      const criterios: CriterioPlan[] = [
-        ...(act.achievements ?? []).map((texto, i) => ({
-          texto,
-          estado: 'cumplido' as CriterioEstadoEnum,
+      const plazo = parsePlazo(act.phase)
+      const objetivos: ObjetivoPlan[] = [
+        ...(act.achievements ?? []).map((titulo, i) => ({
+          titulo,
+          tipo: 'hu' as ObjetivoTipoEnum,
+          plazo,
+          estado: 'cumplido' as ObjetivoEstadoEnum,
           peso: 1,
           orden: i,
         })),
-        ...(act.nextSteps ?? []).map((texto, i) => ({
-          texto,
-          estado: 'pendiente' as CriterioEstadoEnum,
+        ...(act.nextSteps ?? []).map((titulo, i) => ({
+          titulo,
+          tipo: 'hu' as ObjetivoTipoEnum,
+          plazo,
+          estado: 'pendiente' as ObjetivoEstadoEnum,
           peso: 1,
           orden: (act.achievements ?? []).length + i,
         })),
@@ -124,20 +127,15 @@ export function mapDataToPlan(data: RawData): SeedPlan {
       const recursos: RecursoPlan[] = act.video
         ? [{ tipo: 'video_url', titulo: null, url: act.video, orden: 0 }]
         : []
-      const progress = act.progress ?? null
       return {
         slug: act.id,
         codigo: parseCodigo(act.name),
         nombre: act.name,
         descripcion_larga: act.description ?? null,
         estado: parseEstado(act.status),
-        avance_override: progress,
+        avance_override: act.progress ?? null,
         orden: pi,
-        plazo: {
-          plazo: parsePlazo(act.phase),
-          avance_override: progress,
-          criterios,
-        },
+        objetivos,
         recursos,
       }
     }),
