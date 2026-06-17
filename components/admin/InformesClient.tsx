@@ -14,7 +14,7 @@ import {
 } from '@/lib/actions/informes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Field } from '@/components/admin/Field'
 import {
   Table,
   TableHeader,
@@ -62,20 +62,23 @@ export function InformesClient({ informes }: InformesClientProps) {
       >
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="text-[var(--color-text-muted)] text-xs">
+            <TableRow
+              className="hover:bg-transparent"
+              style={{ borderColor: 'var(--color-surface-border)' }}
+            >
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
                 Título
               </TableHead>
-              <TableHead className="text-[var(--color-text-muted)] text-xs">
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
                 Fecha corte
               </TableHead>
-              <TableHead className="text-[var(--color-text-muted)] text-xs">
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
                 Activo
               </TableHead>
-              <TableHead className="text-[var(--color-text-muted)] text-xs text-right">
+              <TableHead className="px-3 py-2.5 text-right text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
                 Avance global
               </TableHead>
-              <TableHead className="text-[var(--color-text-muted)] text-xs text-right">
+              <TableHead className="px-3 py-2.5 text-right text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
                 Acciones
               </TableHead>
             </TableRow>
@@ -85,7 +88,7 @@ export function InformesClient({ informes }: InformesClientProps) {
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center text-xs text-[var(--color-text-muted)] py-8"
+                  className="px-3 py-8 text-center text-xs text-[var(--color-text-muted)]"
                 >
                   No hay informes. Crea el primero.
                 </TableCell>
@@ -116,8 +119,11 @@ function InformeRow({ informe }: { informe: InformeConAvance }) {
   }
 
   return (
-    <TableRow>
-      <TableCell className="text-[var(--color-text-primary)] font-medium">
+    <TableRow
+      className="hover:bg-white/[0.02]"
+      style={{ borderColor: 'var(--color-surface-border)' }}
+    >
+      <TableCell className="px-3 py-2.5 font-medium text-[var(--color-text-primary)]">
         <div>{informe.titulo}</div>
         {informe.subtitulo && (
           <div className="text-xs text-[var(--color-text-muted)]">
@@ -125,22 +131,25 @@ function InformeRow({ informe }: { informe: InformeConAvance }) {
           </div>
         )}
       </TableCell>
-      <TableCell className="text-[var(--color-text-muted)] tabular-nums text-xs">
+      <TableCell className="px-3 py-2.5 text-xs tabular-nums text-[var(--color-text-muted)]">
         {informe.fecha_corte}
       </TableCell>
-      <TableCell>
+      <TableCell className="px-3 py-2.5">
         {informe.is_active ? (
-          <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+          <span
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-emerald-400"
+            style={{ background: 'rgba(255,255,255,0.06)' }}
+          >
             Activo
           </span>
         ) : (
           <span className="text-[10px] text-[var(--color-text-muted)]">—</span>
         )}
       </TableCell>
-      <TableCell className="text-right tabular-nums text-[var(--color-text-primary)]">
+      <TableCell className="px-3 py-2.5 text-right tabular-nums text-[var(--color-text-primary)]">
         {Math.round(informe.avance_global_calculado)}%
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="px-3 py-2.5 text-right">
         <div className="flex items-center justify-end gap-1">
           <InformeFormDialog
             mode="edit"
@@ -269,53 +278,60 @@ function InformeFormDialog({
             {mode === 'create' ? 'Nuevo informe' : 'Editar informe'}
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="inf-titulo" className="text-xs">
-              Título
-            </Label>
+        <div className="space-y-5">
+          <Field
+            label="Título"
+            htmlFor="inf-titulo"
+            description="Cómo aparece el informe en el listado."
+            required
+          >
             <Input
               id="inf-titulo"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Informe de gestión 2026"
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="inf-subtitulo" className="text-xs">
-              Subtítulo
-            </Label>
+          </Field>
+          <Field
+            label="Subtítulo"
+            htmlFor="inf-subtitulo"
+            description="Texto secundario opcional, p. ej. el periodo."
+          >
             <Input
               id="inf-subtitulo"
               value={subtitulo}
               onChange={(e) => setSubtitulo(e.target.value)}
               placeholder="Opcional"
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="inf-fecha" className="text-xs">
-              Fecha de corte
-            </Label>
-            <Input
-              id="inf-fecha"
-              type="date"
-              value={fechaCorte}
-              onChange={(e) => setFechaCorte(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="inf-avance" className="text-xs">
-              Avance global override (%)
-            </Label>
-            <Input
-              id="inf-avance"
-              type="number"
-              min={0}
-              max={100}
-              value={avance}
-              onChange={(e) => setAvance(e.target.value)}
-              placeholder="Opcional — se calcula si se deja vacío"
-            />
+          </Field>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field
+              label="Fecha de corte"
+              htmlFor="inf-fecha"
+              description="Fecha a la que corresponden los datos."
+            >
+              <Input
+                id="inf-fecha"
+                type="date"
+                value={fechaCorte}
+                onChange={(e) => setFechaCorte(e.target.value)}
+              />
+            </Field>
+            <Field
+              label="Avance global override (%)"
+              htmlFor="inf-avance"
+              description="Vacío = se calcula desde los proyectos."
+            >
+              <Input
+                id="inf-avance"
+                type="number"
+                min={0}
+                max={100}
+                value={avance}
+                onChange={(e) => setAvance(e.target.value)}
+                placeholder="Opcional — se calcula si se deja vacío"
+              />
+            </Field>
           </div>
         </div>
         <DialogFooter>

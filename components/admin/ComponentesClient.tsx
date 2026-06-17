@@ -25,8 +25,8 @@ import type { Componente } from '@/types/domain'
 import type { ComponenteFormValues } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Field } from '@/components/admin/Field'
 import {
   Dialog,
   DialogTrigger,
@@ -153,7 +153,7 @@ function ComponenteRow({
         background: 'var(--color-surface-card)',
         borderColor: 'var(--color-surface-border)',
       }}
-      className="flex items-center gap-3 rounded-xl border p-3"
+      className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-white/[0.02]"
     >
       <button
         type="button"
@@ -284,31 +284,54 @@ function ComponenteFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 space-y-1">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input id="nombre" name="nombre" defaultValue={componente?.nombre ?? ''} required />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="slug">Slug</Label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Field
+            label="Nombre"
+            htmlFor="nombre"
+            required
+            description="Cómo aparece el componente en la presentación."
+          >
+            <Input id="nombre" name="nombre" defaultValue={componente?.nombre ?? ''} required />
+          </Field>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field
+              label="Slug"
+              htmlFor="slug"
+              required
+              description="Identificador en la URL. Solo minúsculas y guiones."
+            >
               <Input id="slug" name="slug" defaultValue={componente?.slug ?? ''} required />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="icono">Icono</Label>
+            </Field>
+            <Field
+              label="Icono"
+              htmlFor="icono"
+              required
+              description="Emoji que encabeza el componente."
+            >
               <Input id="icono" name="icono" defaultValue={componente?.icono ?? ''} required />
-            </div>
-            <div className="col-span-2 space-y-1">
-              <Label htmlFor="descripcion">Descripción</Label>
-              <Textarea
-                id="descripcion"
-                name="descripcion"
-                defaultValue={componente?.descripcion ?? ''}
-                rows={2}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="color_hex">Color (hex)</Label>
+            </Field>
+          </div>
+
+          <Field
+            label="Descripción"
+            htmlFor="descripcion"
+            description="Contexto breve del componente."
+          >
+            <Textarea
+              id="descripcion"
+              name="descripcion"
+              defaultValue={componente?.descripcion ?? ''}
+              rows={2}
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field
+              label="Color (hex)"
+              htmlFor="color_hex"
+              description="Color de acento del componente."
+            >
               <div className="flex items-center gap-2">
                 <Input
                   id="color_hex"
@@ -322,32 +345,40 @@ function ComponenteFormDialog({
                   aria-label="Color en texto"
                   value={colorHex.toUpperCase()}
                   readOnly
-                  className="flex-1 tabular-nums"
+                  className="flex-1 font-mono tabular-nums"
                 />
               </div>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="color_token">Color token</Label>
+            </Field>
+            <Field
+              label="Color token"
+              htmlFor="color_token"
+              required
+              description="Nombre del token de color del tema."
+            >
               <Input
                 id="color_token"
                 name="color_token"
                 defaultValue={componente?.color_token ?? ''}
                 required
               />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="avance_override">Avance % (opcional)</Label>
-              <Input
-                id="avance_override"
-                name="avance_override"
-                type="number"
-                min={0}
-                max={100}
-                defaultValue={componente?.avance_override ?? ''}
-                placeholder="auto"
-              />
-            </div>
+            </Field>
           </div>
+
+          <Field
+            label="Avance %"
+            htmlFor="avance_override"
+            description="Vacío = automático por proyectos."
+          >
+            <Input
+              id="avance_override"
+              name="avance_override"
+              type="number"
+              min={0}
+              max={100}
+              defaultValue={componente?.avance_override ?? ''}
+              placeholder="auto"
+            />
+          </Field>
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" size="sm" />}>

@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Field } from '@/components/admin/Field'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import type { Profile, RoleEnum } from '@/types/domain'
 import {
@@ -61,26 +61,41 @@ export function UsuariosClient({ profiles }: UsuariosClientProps) {
 
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Rol</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+          <TableRow
+            className="hover:bg-transparent"
+            style={{ borderColor: 'var(--color-surface-border)' }}
+          >
+            <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+              Email
+            </TableHead>
+            <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+              Nombre
+            </TableHead>
+            <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+              Rol
+            </TableHead>
+            <TableHead className="px-3 py-2.5 text-right text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+              Acciones
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {profiles.map((p) => (
-            <TableRow key={p.id}>
-              <TableCell className="text-[var(--color-text-primary)]">
+            <TableRow
+              key={p.id}
+              className="hover:bg-white/[0.02]"
+              style={{ borderColor: 'var(--color-surface-border)' }}
+            >
+              <TableCell className="px-3 py-2.5 text-[var(--color-text-primary)]">
                 {p.email ?? '—'}
               </TableCell>
-              <TableCell className="text-[var(--color-text-secondary)]">
+              <TableCell className="px-3 py-2.5 text-[var(--color-text-secondary)]">
                 {p.full_name ?? '—'}
               </TableCell>
-              <TableCell>
+              <TableCell className="px-3 py-2.5">
                 <RolBadge role={p.role} />
               </TableCell>
-              <TableCell>
+              <TableCell className="px-3 py-2.5">
                 <div className="flex items-center justify-end gap-2">
                   <CambiarRolSelect
                     userId={p.id}
@@ -118,12 +133,11 @@ function RolBadge({ role }: { role: RoleEnum }) {
   const isAdmin = role === 'admin'
   return (
     <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
-      style={
-        isAdmin
-          ? { background: 'rgba(59,130,246,0.15)', color: '#3B82F6' }
-          : { background: 'rgba(148,163,184,0.15)', color: 'var(--color-text-muted)' }
-      }
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+      style={{
+        background: 'rgba(255,255,255,0.06)',
+        color: isAdmin ? '#3B82F6' : 'var(--color-text-muted)',
+      }}
     >
       {isAdmin ? 'Admin' : 'Usuario'}
     </span>
@@ -213,8 +227,13 @@ function NuevoUsuarioDialog({ onDone }: { onDone: () => void }) {
             Crea una cuenta y asigna su rol.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
-          <Field label="Email" htmlFor="nuevo-email">
+        <div className="space-y-5 py-2">
+          <Field
+            label="Email"
+            htmlFor="nuevo-email"
+            description="Con este correo iniciará sesión."
+            required
+          >
             <Input
               id="nuevo-email"
               type="email"
@@ -223,7 +242,12 @@ function NuevoUsuarioDialog({ onDone }: { onDone: () => void }) {
               placeholder="usuario@ejemplo.com"
             />
           </Field>
-          <Field label="Contraseña" htmlFor="nuevo-password">
+          <Field
+            label="Contraseña"
+            htmlFor="nuevo-password"
+            description="Mínimo 8 caracteres."
+            required
+          >
             <Input
               id="nuevo-password"
               type="password"
@@ -232,7 +256,11 @@ function NuevoUsuarioDialog({ onDone }: { onDone: () => void }) {
               placeholder="Mínimo 8 caracteres"
             />
           </Field>
-          <Field label="Nombre" htmlFor="nuevo-nombre">
+          <Field
+            label="Nombre"
+            htmlFor="nuevo-nombre"
+            description="Nombre completo para mostrar. Opcional."
+          >
             <Input
               id="nuevo-nombre"
               value={fullName}
@@ -240,7 +268,11 @@ function NuevoUsuarioDialog({ onDone }: { onDone: () => void }) {
               placeholder="Nombre completo (opcional)"
             />
           </Field>
-          <Field label="Rol" htmlFor="nuevo-rol">
+          <Field
+            label="Rol"
+            htmlFor="nuevo-rol"
+            description="Admin gestiona todo; Usuario solo consulta."
+          >
             <Select
               value={role}
               onValueChange={(v) => {
@@ -312,8 +344,13 @@ function ResetPasswordDialog({
             Nueva contraseña para {email ?? 'este usuario'}.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
-          <Field label="Nueva contraseña" htmlFor="reset-password">
+        <div className="space-y-5 py-2">
+          <Field
+            label="Nueva contraseña"
+            htmlFor="reset-password"
+            description="Mínimo 8 caracteres. Reemplaza la actual."
+            required
+          >
             <Input
               id="reset-password"
               type="password"
@@ -333,25 +370,6 @@ function ResetPasswordDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
-
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string
-  htmlFor: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={htmlFor} className="text-xs text-[var(--color-text-muted)]">
-        {label}
-      </Label>
-      {children}
-    </div>
   )
 }
 

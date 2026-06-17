@@ -32,14 +32,15 @@ export function ProyectoCard({
         className="block group"
       >
         <div
-          className="rounded-2xl p-4 border transition-all duration-200 hover:scale-[1.01] h-full"
+          className="rounded-xl p-4 border transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--card-accent)] h-full"
           style={{
             background: 'var(--color-surface-card)',
             borderColor: 'var(--color-surface-border)',
             backdropFilter: 'blur(12px)',
+            ['--card-accent' as string]: `${componente.color_hex}55`,
           }}
         >
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             <ProgressRing
               value={avance}
               color={componente.color_hex}
@@ -48,7 +49,7 @@ export function ProyectoCard({
             />
             <div className="flex-1 min-w-0">
               {proyecto.codigo && (
-                <p className="text-xs font-mono text-[var(--color-text-muted)] mb-0.5">
+                <p className="text-[11px] font-mono text-[var(--color-text-muted)] mb-0.5">
                   {proyecto.codigo}
                 </p>
               )}
@@ -56,7 +57,7 @@ export function ProyectoCard({
                 {proyecto.nombre}
               </h4>
               {proyecto.descripcion_corta && (
-                <p className="text-xs text-[var(--color-text-muted)] mt-1.5 line-clamp-2">
+                <p className="text-xs text-[var(--color-text-muted)] mt-1 line-clamp-2">
                   {proyecto.descripcion_corta}
                 </p>
               )}

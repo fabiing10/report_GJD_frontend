@@ -28,8 +28,8 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Field } from '@/components/admin/Field'
 import {
   Table,
   TableHeader,
@@ -122,9 +122,13 @@ function ActividadForm({
   }
 
   return (
-    <div className="grid gap-3">
-      <div className="grid gap-1.5">
-        <Label htmlFor="act-proyecto">Proyecto</Label>
+    <div className="space-y-5">
+      <Field
+        label="Proyecto"
+        htmlFor="act-proyecto"
+        description="Proyecto al que pertenece la actividad."
+        required
+      >
         <Select
           value={values.proyecto_id}
           onValueChange={(v) => set('proyecto_id', v as string)}
@@ -140,11 +144,14 @@ function ActividadForm({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="grid gap-1.5">
-          <Label htmlFor="act-tipo">Tipo</Label>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <Field
+          label="Tipo"
+          htmlFor="act-tipo"
+          description="Naturaleza de la actividad."
+        >
           <Select
             value={values.tipo}
             onValueChange={(v) => set('tipo', v as ActividadTipoEnum)}
@@ -160,9 +167,12 @@ function ActividadForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="act-estado">Estado</Label>
+        </Field>
+        <Field
+          label="Estado"
+          htmlFor="act-estado"
+          description="Avance actual de la actividad."
+        >
           <Select
             value={values.estado}
             onValueChange={(v) => set('estado', v as ActividadEstadoEnum)}
@@ -178,21 +188,28 @@ function ActividadForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Field>
       </div>
 
-      <div className="grid gap-1.5">
-        <Label htmlFor="act-titulo">Título</Label>
+      <Field
+        label="Título"
+        htmlFor="act-titulo"
+        description="Nombre breve que identifica la actividad."
+        required
+      >
         <Input
           id="act-titulo"
           value={values.titulo}
           onChange={(e) => set('titulo', e.target.value)}
           placeholder="Título de la actividad"
         />
-      </div>
+      </Field>
 
-      <div className="grid gap-1.5">
-        <Label htmlFor="act-descripcion">Descripción</Label>
+      <Field
+        label="Descripción"
+        htmlFor="act-descripcion"
+        description="Detalle opcional del alcance o las notas."
+      >
         <Textarea
           id="act-descripcion"
           value={values.descripcion ?? ''}
@@ -200,27 +217,33 @@ function ActividadForm({
           placeholder="Detalle opcional"
           rows={3}
         />
-      </div>
+      </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="grid gap-1.5">
-          <Label htmlFor="act-fecha">Fecha</Label>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <Field
+          label="Fecha"
+          htmlFor="act-fecha"
+          description="Fecha en que ocurre o vence."
+        >
           <Input
             id="act-fecha"
             type="date"
             value={values.fecha ?? ''}
             onChange={(e) => set('fecha', e.target.value || null)}
           />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="act-responsable">Responsable</Label>
+        </Field>
+        <Field
+          label="Responsable"
+          htmlFor="act-responsable"
+          description="Persona a cargo de la actividad."
+        >
           <Input
             id="act-responsable"
             value={values.responsable ?? ''}
             onChange={(e) => set('responsable', e.target.value || null)}
             placeholder="Nombre"
           />
-        </div>
+        </Field>
       </div>
 
       <DialogFooter>
@@ -332,14 +355,31 @@ export function ActividadesClient({
       >
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Proyecto</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Título</TableHead>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Responsable</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+            <TableRow
+              className="hover:bg-transparent"
+              style={{ borderColor: 'var(--color-surface-border)' }}
+            >
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Proyecto
+              </TableHead>
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Tipo
+              </TableHead>
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Título
+              </TableHead>
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Fecha
+              </TableHead>
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Estado
+              </TableHead>
+              <TableHead className="px-3 py-2.5 text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Responsable
+              </TableHead>
+              <TableHead className="px-3 py-2.5 text-right text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-muted)]">
+                Acciones
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -347,38 +387,45 @@ export function ActividadesClient({
               <TableRow>
                 <TableCell
                   colSpan={7}
-                  className="text-center text-xs text-[var(--color-text-muted)] py-8"
+                  className="px-3 py-8 text-center text-xs text-[var(--color-text-muted)]"
                 >
                   Sin actividades
                 </TableCell>
               </TableRow>
             ) : (
               visibles.map((a) => (
-                <TableRow key={a.id}>
-                  <TableCell className="text-[var(--color-text-secondary)]">
+                <TableRow
+                  key={a.id}
+                  className="hover:bg-white/[0.02]"
+                  style={{ borderColor: 'var(--color-surface-border)' }}
+                >
+                  <TableCell className="px-3 py-2.5 text-[var(--color-text-secondary)]">
                     {a.proyecto_nombre}
                   </TableCell>
-                  <TableCell className="text-[var(--color-text-muted)]">
+                  <TableCell className="px-3 py-2.5 text-[var(--color-text-muted)]">
                     {TIPO_LABEL[a.tipo]}
                   </TableCell>
-                  <TableCell className="text-[var(--color-text-primary)] whitespace-normal">
+                  <TableCell className="px-3 py-2.5 whitespace-normal text-[var(--color-text-primary)]">
                     {a.titulo}
                   </TableCell>
-                  <TableCell className="text-[var(--color-text-muted)] tabular-nums">
+                  <TableCell className="px-3 py-2.5 tabular-nums text-[var(--color-text-muted)]">
                     {a.fecha ?? '—'}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-3 py-2.5">
                     <span
-                      className="text-xs font-medium"
-                      style={{ color: ESTADO_COLOR[a.estado] }}
+                      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+                      style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        color: ESTADO_COLOR[a.estado],
+                      }}
                     >
                       {ESTADO_LABEL[a.estado]}
                     </span>
                   </TableCell>
-                  <TableCell className="text-[var(--color-text-muted)]">
+                  <TableCell className="px-3 py-2.5 text-[var(--color-text-muted)]">
                     {a.responsable ?? '—'}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="px-3 py-2.5 text-right">
                     <div className="inline-flex items-center gap-1">
                       <Dialog
                         open={editId === a.id}

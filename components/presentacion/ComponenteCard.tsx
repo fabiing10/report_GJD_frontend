@@ -19,19 +19,20 @@ export function ComponenteCard({ componente, index = 0 }: ComponenteCardProps) {
     >
       <Link href={`/${componente.slug}`} className="block group">
         <div
-          className="rounded-2xl p-5 border transition-all duration-200 hover:scale-[1.02] hover:bg-[var(--color-surface-card-hover)]"
+          className="rounded-xl p-4 border transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--card-accent)]"
           style={{
             background: 'var(--color-surface-card)',
             borderColor: 'var(--color-surface-border)',
             backdropFilter: 'blur(12px)',
+            ['--card-accent' as string]: `${componente.color_hex}55`,
           }}
         >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2.5 min-w-0">
               <span
-                className="text-3xl leading-none shrink-0"
+                className="text-2xl leading-none shrink-0"
                 style={{
-                  filter: `drop-shadow(0 0 16px ${componente.color_hex}66)`,
+                  filter: `drop-shadow(0 0 12px ${componente.color_hex}55)`,
                 }}
                 aria-hidden="true"
               >
@@ -41,13 +42,13 @@ export function ComponenteCard({ componente, index = 0 }: ComponenteCardProps) {
                 <h3 className="text-sm font-semibold text-[var(--color-text-primary)] leading-tight line-clamp-2">
                   {componente.nombre}
                 </h3>
-                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
                   {componente.total_actividades} actividades
                 </p>
               </div>
             </div>
             <span
-              className="text-xl font-display font-semibold tabular-nums shrink-0 ml-2"
+              className="text-lg font-semibold tabular-nums shrink-0"
               style={{ color: componente.color_hex }}
             >
               {Math.round(componente.avance_calculado)}%

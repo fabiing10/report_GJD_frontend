@@ -26,7 +26,6 @@ import type { Componente, EstadoEnum, ProyectoConAvance } from '@/types/domain'
 import type { ProyectoFormValues } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -35,6 +34,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
+import { Field } from '@/components/admin/Field'
 import {
   Dialog,
   DialogTrigger,
@@ -170,14 +170,20 @@ function GrupoSection({ grupo, onDone }: { grupo: ProyectoGrupo; onDone: () => v
       style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="text-lg" aria-hidden>
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-base"
+            style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
+            aria-hidden
+          >
             {grupo.componente.icono}
           </span>
           <h2 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
             {grupo.componente.nombre}
           </h2>
-          <span className="text-[11px] text-[var(--color-text-muted)]">
+          <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] tabular-nums text-[var(--color-text-muted)]"
+            style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
+          >
             {items.length} proyecto{items.length === 1 ? '' : 's'}
           </span>
         </div>
@@ -230,7 +236,7 @@ function ProyectoRow({
   return (
     <li
       ref={setNodeRef}
-      className="flex items-center gap-3 rounded-lg border p-3"
+      className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-white/[0.02]"
       style={{
         borderColor: 'var(--color-surface-border)',
         transform: CSS.Transform.toString(transform),
@@ -381,39 +387,57 @@ function ProyectoFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 space-y-1">
-              <Label htmlFor="nombre">Nombre</Label>
-              <Input id="nombre" name="nombre" defaultValue={proyecto?.nombre ?? ''} required />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="slug">Slug</Label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Field
+            label="Nombre"
+            htmlFor="nombre"
+            required
+            description="Cómo aparece el proyecto en el reporte."
+          >
+            <Input id="nombre" name="nombre" defaultValue={proyecto?.nombre ?? ''} required />
+          </Field>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field
+              label="Slug"
+              htmlFor="slug"
+              required
+              description="Identificador en la URL. Solo minúsculas y guiones."
+            >
               <Input id="slug" name="slug" defaultValue={proyecto?.slug ?? ''} required />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="codigo">Código</Label>
+            </Field>
+            <Field label="Código" htmlFor="codigo" description="Referencia corta, p. ej. PRY-001.">
               <Input id="codigo" name="codigo" defaultValue={proyecto?.codigo ?? ''} placeholder="PRY-001" />
-            </div>
-            <div className="col-span-2 space-y-1">
-              <Label htmlFor="descripcion_corta">Descripción corta</Label>
-              <Input
-                id="descripcion_corta"
-                name="descripcion_corta"
-                defaultValue={proyecto?.descripcion_corta ?? ''}
-              />
-            </div>
-            <div className="col-span-2 space-y-1">
-              <Label htmlFor="descripcion_larga">Descripción larga</Label>
-              <Textarea
-                id="descripcion_larga"
-                name="descripcion_larga"
-                defaultValue={proyecto?.descripcion_larga ?? ''}
-                rows={3}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="estado-trigger">Estado</Label>
+            </Field>
+          </div>
+
+          <Field
+            label="Descripción corta"
+            htmlFor="descripcion_corta"
+            description="Resumen de una línea para las tarjetas."
+          >
+            <Input
+              id="descripcion_corta"
+              name="descripcion_corta"
+              defaultValue={proyecto?.descripcion_corta ?? ''}
+            />
+          </Field>
+
+          <Field
+            label="Descripción larga"
+            htmlFor="descripcion_larga"
+            description="Contexto completo que se muestra en el detalle del proyecto."
+          >
+            <Textarea
+              id="descripcion_larga"
+              name="descripcion_larga"
+              defaultValue={proyecto?.descripcion_larga ?? ''}
+              rows={3}
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field label="Estado" htmlFor="estado-trigger" description="Etapa actual del proyecto.">
               <Select value={estado} onValueChange={(v) => v && setEstado(v as EstadoEnum)}>
                 <SelectTrigger id="estado-trigger" className="w-full">
                   <SelectValue placeholder="Estado" />
@@ -426,35 +450,34 @@ function ProyectoFormDialog({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="responsable">Responsable</Label>
+            </Field>
+            <Field label="Responsable" htmlFor="responsable" description="Persona o área a cargo.">
               <Input
                 id="responsable"
                 name="responsable"
                 defaultValue={proyecto?.responsable ?? ''}
               />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="fecha_inicio">Fecha inicio</Label>
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <Field label="Fecha inicio" htmlFor="fecha_inicio" description="Inicio planificado.">
               <Input
                 id="fecha_inicio"
                 name="fecha_inicio"
                 type="date"
                 defaultValue={proyecto?.fecha_inicio ?? ''}
               />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="fecha_fin">Fecha fin</Label>
+            </Field>
+            <Field label="Fecha fin" htmlFor="fecha_fin" description="Cierre planificado.">
               <Input
                 id="fecha_fin"
                 name="fecha_fin"
                 type="date"
                 defaultValue={proyecto?.fecha_fin ?? ''}
               />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="avance_override">Avance % (opcional)</Label>
+            </Field>
+            <Field label="Avance %" htmlFor="avance_override" description="Vacío = automático por criterios.">
               <Input
                 id="avance_override"
                 name="avance_override"
@@ -464,7 +487,7 @@ function ProyectoFormDialog({
                 defaultValue={proyecto?.avance_override ?? ''}
                 placeholder="auto"
               />
-            </div>
+            </Field>
           </div>
 
           <DialogFooter>
