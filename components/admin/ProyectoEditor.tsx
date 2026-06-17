@@ -7,7 +7,6 @@ import type { ProyectoDetalle, EstadoEnum } from '@/types/domain'
 import type { ProyectoFormValues } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -16,6 +15,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
+import { Field, FormSection } from '@/components/admin/Field'
 import { actualizarProyecto } from '@/lib/actions/proyectos'
 import { crearPlazo } from '@/lib/actions/plazos'
 import { PlazoCriterios } from '@/components/admin/PlazoCriterios'
@@ -135,100 +135,88 @@ function DatosSection({
   }
 
   return (
-    <section className="rounded-xl p-4 border" style={cardStyle}>
-      <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">
-        Datos del proyecto
-      </h2>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
-        <div className="col-span-2 space-y-1">
-          <Label htmlFor="nombre">Nombre</Label>
+    <FormSection
+      title="Datos del proyecto"
+      description="Identidad y metadatos. El avance se calcula desde los criterios salvo que fijes un override."
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Field label="Nombre" htmlFor="nombre" required description="Cómo aparece el proyecto en el reporte.">
           <Input id="nombre" name="nombre" defaultValue={proyecto.nombre} required />
+        </Field>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <Field label="Slug" htmlFor="slug" required description="Identificador en la URL. Solo minúsculas y guiones.">
+            <Input id="slug" name="slug" defaultValue={proyecto.slug} required />
+          </Field>
+          <Field label="Código" htmlFor="codigo" description="Referencia corta, p. ej. HU-1.">
+            <Input id="codigo" name="codigo" defaultValue={proyecto.codigo ?? ''} placeholder="HU-1" />
+          </Field>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="slug">Slug</Label>
-          <Input id="slug" name="slug" defaultValue={proyecto.slug} required />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="codigo">Código</Label>
-          <Input id="codigo" name="codigo" defaultValue={proyecto.codigo ?? ''} />
-        </div>
-        <div className="col-span-2 space-y-1">
-          <Label htmlFor="descripcion_corta">Descripción corta</Label>
+
+        <Field label="Descripción corta" htmlFor="descripcion_corta" description="Resumen de una línea para las tarjetas.">
           <Input
             id="descripcion_corta"
             name="descripcion_corta"
             defaultValue={proyecto.descripcion_corta ?? ''}
           />
-        </div>
-        <div className="col-span-2 space-y-1">
-          <Label htmlFor="descripcion_larga">Descripción larga</Label>
+        </Field>
+
+        <Field label="Descripción larga" htmlFor="descripcion_larga" description="Contexto completo que se muestra en el detalle del proyecto.">
           <Textarea
             id="descripcion_larga"
             name="descripcion_larga"
             defaultValue={proyecto.descripcion_larga ?? ''}
-            rows={3}
+            rows={4}
           />
+        </Field>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <Field label="Estado" htmlFor="estado" description="Etapa actual del proyecto.">
+            <Select value={estado} onValueChange={(v) => setEstado(v as EstadoEnum)}>
+              <SelectTrigger id="estado" className="w-full">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                {ESTADOS.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Responsable" htmlFor="responsable" description="Persona o área a cargo.">
+            <Input id="responsable" name="responsable" defaultValue={proyecto.responsable ?? ''} />
+          </Field>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="estado">Estado</Label>
-          <Select value={estado} onValueChange={(v) => setEstado(v as EstadoEnum)}>
-            <SelectTrigger id="estado" className="w-full">
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              {ESTADOS.map((s) => (
-                <SelectItem key={s.value} value={s.value}>
-                  {s.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <Field label="Fecha inicio" htmlFor="fecha_inicio">
+            <Input id="fecha_inicio" name="fecha_inicio" type="date" defaultValue={proyecto.fecha_inicio ?? ''} />
+          </Field>
+          <Field label="Fecha fin" htmlFor="fecha_fin">
+            <Input id="fecha_fin" name="fecha_fin" type="date" defaultValue={proyecto.fecha_fin ?? ''} />
+          </Field>
+          <Field label="Avance %" htmlFor="avance_override" description="Vacío = automático por criterios.">
+            <Input
+              id="avance_override"
+              name="avance_override"
+              type="number"
+              min={0}
+              max={100}
+              defaultValue={proyecto.avance_override ?? ''}
+              placeholder="auto"
+            />
+          </Field>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="responsable">Responsable</Label>
-          <Input
-            id="responsable"
-            name="responsable"
-            defaultValue={proyecto.responsable ?? ''}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="fecha_inicio">Fecha inicio</Label>
-          <Input
-            id="fecha_inicio"
-            name="fecha_inicio"
-            type="date"
-            defaultValue={proyecto.fecha_inicio ?? ''}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="fecha_fin">Fecha fin</Label>
-          <Input
-            id="fecha_fin"
-            name="fecha_fin"
-            type="date"
-            defaultValue={proyecto.fecha_fin ?? ''}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="avance_override">Avance % (opcional)</Label>
-          <Input
-            id="avance_override"
-            name="avance_override"
-            type="number"
-            min={0}
-            max={100}
-            defaultValue={proyecto.avance_override ?? ''}
-            placeholder="auto"
-          />
-        </div>
-        <div className="col-span-2 flex justify-end">
+
+        <div className="flex justify-end border-t pt-4" style={{ borderColor: 'var(--color-surface-border)' }}>
           <Button type="submit" size="sm" disabled={loading}>
-            {loading ? '…' : 'Guardar datos'}
+            {loading ? 'Guardando…' : 'Guardar datos'}
           </Button>
         </div>
       </form>
-    </section>
+    </FormSection>
   )
 }
 
