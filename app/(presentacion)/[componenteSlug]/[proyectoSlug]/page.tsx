@@ -1,14 +1,13 @@
 import { notFound } from 'next/navigation'
-import { Check, ArrowRight } from 'lucide-react'
 import { getComponente } from '@/lib/db/queries'
-import { logros, proximosPasos } from '@/lib/objetivos'
 import { ProgressRing } from '@/components/presentacion/ProgressRing'
 import { EstadoBadge } from '@/components/presentacion/EstadoBadge'
 import { Breadcrumbs } from '@/components/presentacion/Breadcrumbs'
 import { NavegacionProyectos } from '@/components/presentacion/NavegacionProyectos'
 import { RecursoVisual } from '@/components/presentacion/RecursoVisual'
 import { PaginadorPuntos } from '@/components/presentacion/PaginadorPuntos'
-import { ActividadesTabs } from '@/components/presentacion/ActividadesTabs'
+import { ObjetivosPorPlazoReporte } from '@/components/presentacion/ObjetivosPorPlazoReporte'
+import { ObjetivoDrawer } from '@/components/presentacion/ObjetivoDrawer'
 
 interface Props {
   params: Promise<{ componenteSlug: string; proyectoSlug: string }>
@@ -29,11 +28,8 @@ export default async function ProyectoPage({ params }: Props) {
       ? componente.proyectos[proyectoIndex + 1]!
       : null
 
-  const logrosProyecto = logros(proyecto.objetivos)
-  const pasosProyecto = proximosPasos(proyecto.objetivos)
-
   return (
-    <div className="px-4 pt-4 pb-24 max-w-6xl mx-auto">
+    <div className="px-4 pt-4 pb-24 max-w-5xl mx-auto">
       <Breadcrumbs
         items={[
           { label: 'Inicio', href: '/' },
@@ -46,78 +42,47 @@ export default async function ProyectoPage({ params }: Props) {
         ]}
       />
 
-      {/* Detalle del proyecto — 3 columnas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-        {/* Izq: ring + meta */}
-        <div className="flex flex-col items-center gap-4 pt-4">
-          <ProgressRing value={proyecto.avance_calculado} color={componente.color_hex} size="lg" />
-          <EstadoBadge estado={proyecto.estado} />
-          {proyecto.responsable && (
-            <p className="text-xs text-[var(--color-text-muted)] text-center">
-              {proyecto.responsable}
+      {/* Header del proyecto */}
+      <div className="mt-4 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+        <ProgressRing value={proyecto.avance_calculado} color={componente.color_hex} size="lg" />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl font-display font-bold text-[var(--color-text-primary)] leading-tight">
+            {proyecto.codigo ? `${proyecto.codigo} · ` : ''}
+            {proyecto.nombre}
+          </h1>
+          {proyecto.descripcion_corta && (
+            <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              {proyecto.descripcion_corta}
             </p>
           )}
-          {(proyecto.fecha_fin ?? proyecto.fecha_inicio) && (
-            <p className="text-xs text-[var(--color-text-muted)] text-center">
-              {proyecto.fecha_fin ?? proyecto.fecha_inicio}
-            </p>
-          )}
-        </div>
-
-        {/* Centro: logros */}
-        <div
-          className="rounded-2xl p-5 border"
-          style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 rounded-full bg-[var(--color-alcaldia-naranja)]" />
-            <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
-              Logros Alcanzados
-            </h2>
-          </div>
-          <ul className="space-y-2.5">
-            {logrosProyecto.length > 0 ? (
-              logrosProyecto.map((l) => (
-                <li key={l.id} className="flex gap-2.5">
-                  <Check size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-completado)]" />
-                  <span className="text-sm text-[var(--color-text-secondary)]">{l.titulo}</span>
-                </li>
-              ))
-            ) : (
-              <li className="text-sm text-[var(--color-text-muted)] italic">Sin logros registrados</li>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
+            <EstadoBadge estado={proyecto.estado} />
+            {proyecto.responsable && <span>· {proyecto.responsable}</span>}
+            {(proyecto.fecha_fin ?? proyecto.fecha_inicio) && (
+              <span>· {proyecto.fecha_fin ?? proyecto.fecha_inicio}</span>
             )}
-          </ul>
-        </div>
-
-        {/* Der: próximos pasos */}
-        <div
-          className="rounded-2xl p-5 border"
-          style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-surface-border)' }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 rounded-full bg-[var(--color-estado-en-progreso)]" />
-            <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
-              Próximos Pasos
-            </h2>
           </div>
-          <ul className="space-y-2.5">
-            {pasosProyecto.length > 0 ? (
-              pasosProyecto.map((p) => (
-                <li key={p.id} className="flex gap-2.5">
-                  <ArrowRight size={14} className="shrink-0 mt-0.5 text-[var(--color-estado-en-progreso)]" />
-                  <span className="text-sm text-[var(--color-text-secondary)]">{p.titulo}</span>
-                </li>
-              ))
-            ) : (
-              <li className="text-sm text-[var(--color-text-muted)] italic">Sin pasos registrados</li>
-            )}
-          </ul>
         </div>
       </div>
 
-      <RecursoVisual recursos={proyecto.recursos} />
+      {/* Objetivos por plazo */}
+      <section className="mt-8">
+        <div className="mb-4 flex items-center gap-2.5">
+          <div
+            className="h-5 w-1 rounded-full"
+            style={{ background: componente.color_hex }}
+          />
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
+            Objetivos
+          </h2>
+          <span className="text-xs text-[var(--color-text-muted)]">
+            {proyecto.objetivos.length} · toca uno para ver su detalle y bitácora
+          </span>
+        </div>
+        <ObjetivosPorPlazoReporte objetivos={proyecto.objetivos} colorHex={componente.color_hex} />
+      </section>
 
-      <ActividadesTabs objetivos={proyecto.objetivos} colorHex={componente.color_hex} />
+      <RecursoVisual recursos={proyecto.recursos} />
 
       <NavegacionProyectos prev={prev} next={next} componenteSlug={componenteSlug} />
 
@@ -128,6 +93,8 @@ export default async function ProyectoPage({ params }: Props) {
           color={componente.color_hex}
         />
       </div>
+
+      <ObjetivoDrawer objetivos={proyecto.objetivos} colorHex={componente.color_hex} />
     </div>
   )
 }

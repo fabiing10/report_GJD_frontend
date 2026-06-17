@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { EstrellasFondo } from './EstrellasFondo'
-import { SideNav } from './SideNav'
+import { NavTree } from './NavTree'
 import { Footer } from './Footer'
 import { ModoPresentacionBar } from './ModoPresentacionBar'
 import { useModoPresentacion } from './ModoPresentacionProvider'
 import type { InformeConRelaciones } from '@/types/domain'
 
-const SIDEBAR_EXPANDED = 240
-const SIDEBAR_COLLAPSED = 60
+const SIDEBAR_WIDTH = 264
 
 interface PresentacionShellProps {
   informe: InformeConRelaciones
@@ -21,22 +21,22 @@ export function PresentacionShell({ informe, children }: PresentacionShellProps)
   const pathname = usePathname()
   const { isActive, activar, setSlides, setCurrentSlideIndex } = useModoPresentacion()
 
-  const [collapsed, setCollapsed] = useState(false)
+  const [hidden, setHidden] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem('gjd-sidebar-collapsed')
-    if (saved === 'true') setCollapsed(true)
+    const saved = localStorage.getItem('gjd-sidebar-hidden')
+    if (saved === 'true') setHidden(true)
   }, [])
 
   const toggleSidebar = () => {
-    setCollapsed((prev) => {
+    setHidden((prev) => {
       const next = !prev
-      localStorage.setItem('gjd-sidebar-collapsed', String(next))
+      localStorage.setItem('gjd-sidebar-hidden', String(next))
       return next
     })
   }
 
-  const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED
+  const sidebarWidth = hidden ? 0 : SIDEBAR_WIDTH
 
   useEffect(() => {
     const slides = [
@@ -68,12 +68,49 @@ export function PresentacionShell({ informe, children }: PresentacionShellProps)
     <div className="relative min-h-screen">
       <EstrellasFondo />
 
-      {!isActive && (
-        <SideNav
-          componentes={informe.componentes}
-          collapsed={collapsed}
-          onToggle={toggleSidebar}
-        />
+      {!isActive && !hidden && (
+        <aside
+          className="fixed inset-y-0 left-0 z-30 flex flex-col"
+          style={{
+            width: SIDEBAR_WIDTH,
+            background: 'rgba(8,14,30,0.97)',
+            borderRight: '1px solid var(--color-surface-border)',
+            backdropFilter: 'blur(20px)',
+          }}
+        >
+          <div className="flex items-center justify-between border-b border-[var(--color-surface-border)] px-4 py-3.5">
+            <div>
+              <p className="text-[13px] font-bold leading-none tracking-wide text-[var(--color-alcaldia-naranja)]">
+                GJD
+              </p>
+              <p className="mt-1 text-[10px] leading-tight text-[var(--color-text-muted)]">
+                Gestión Jurídica Digital
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label="Ocultar menú"
+              title="Ocultar menú"
+              className="rounded-md p-1.5 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-secondary)]"
+            >
+              <PanelLeftClose size={16} />
+            </button>
+          </div>
+          <NavTree componentes={informe.componentes} />
+        </aside>
+      )}
+
+      {!isActive && hidden && (
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label="Mostrar menú"
+          title="Mostrar menú"
+          className="fixed left-3 top-3 z-40 rounded-md border border-[var(--color-surface-border)] bg-[rgba(8,14,30,0.9)] p-2 text-[var(--color-text-muted)] backdrop-blur transition-colors hover:text-[var(--color-text-secondary)]"
+        >
+          <PanelLeftOpen size={16} />
+        </button>
       )}
 
       <main
