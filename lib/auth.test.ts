@@ -34,4 +34,18 @@ describe('requireAdmin / getCurrentUserRole', () => {
     const { requireAdmin } = await import('./auth')
     await expect(requireAdmin()).resolves.toEqual({ userId: 'u1' })
   })
+
+  it('isCurrentUserAdmin: true solo para admin', async () => {
+    const { isCurrentUserAdmin } = await import('./auth')
+
+    getUser.mockResolvedValue({ data: { user: { id: 'u1' } } })
+    maybeSingle.mockResolvedValue({ data: { role: 'admin' } })
+    await expect(isCurrentUserAdmin()).resolves.toBe(true)
+
+    maybeSingle.mockResolvedValue({ data: { role: 'usuario' } })
+    await expect(isCurrentUserAdmin()).resolves.toBe(false)
+
+    getUser.mockResolvedValue({ data: { user: null } })
+    await expect(isCurrentUserAdmin()).resolves.toBe(false)
+  })
 })

@@ -48,10 +48,9 @@ export function AdminSidebar() {
       <div className="p-3 border-t" style={{ borderColor: 'var(--color-surface-border)' }}>
         <Link
           href="/"
-          target="_blank"
           className="flex items-center gap-1 text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors"
         >
-          Ver presentación →
+          Ver reporte →
         </Link>
       </div>
     </aside>

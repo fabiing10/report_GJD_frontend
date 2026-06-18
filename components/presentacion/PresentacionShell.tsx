@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { EstrellasFondo } from './EstrellasFondo'
 import { NavTree } from './NavTree'
+import { PanelGestionLink } from './PanelGestionLink'
 import { Footer } from './Footer'
 import { ModoPresentacionBar } from './ModoPresentacionBar'
 import { useModoPresentacion } from './ModoPresentacionProvider'
@@ -14,10 +15,11 @@ const SIDEBAR_WIDTH = 264
 
 interface PresentacionShellProps {
   informe: InformeConRelaciones
+  isAdmin: boolean
   children: React.ReactNode
 }
 
-export function PresentacionShell({ informe, children }: PresentacionShellProps) {
+export function PresentacionShell({ informe, isAdmin, children }: PresentacionShellProps) {
   const pathname = usePathname()
   const { isActive, activar, setSlides, setCurrentSlideIndex } = useModoPresentacion()
 
@@ -97,6 +99,7 @@ export function PresentacionShell({ informe, children }: PresentacionShellProps)
               <PanelLeftClose size={16} />
             </button>
           </div>
+          <PanelGestionLink isAdmin={isAdmin} />
           <NavTree componentes={informe.componentes} />
         </aside>
       )}

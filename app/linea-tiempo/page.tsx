@@ -1,8 +1,7 @@
 import { getInformeActivo } from '@/lib/db/queries'
+import { isCurrentUserAdmin } from '@/lib/auth'
 import { GanttCronograma } from '@/components/presentacion/GanttCronograma'
 import { PresentacionShell } from '@/components/presentacion/PresentacionShell'
-
-export const revalidate = 60
 
 export default async function CronogramaPage() {
   const informe = await getInformeActivo()
@@ -14,8 +13,10 @@ export default async function CronogramaPage() {
     )
   }
 
+  const isAdmin = await isCurrentUserAdmin()
+
   return (
-    <PresentacionShell informe={informe}>
+    <PresentacionShell informe={informe} isAdmin={isAdmin}>
       <div className="px-4 pt-6 pb-24">
         <h1 className="mb-2 font-display text-2xl font-bold text-[var(--color-text-primary)]">
           Cronograma

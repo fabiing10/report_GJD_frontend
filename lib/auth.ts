@@ -17,6 +17,12 @@ export async function getCurrentUserRole(): Promise<{ userId: string; role: Role
   return role ? { userId: user.id, role } : null
 }
 
+/** True si el usuario actual es admin. Para UI condicional en el frontoffice. */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const current = await getCurrentUserRole()
+  return current?.role === 'admin'
+}
+
 /** Garantiza que el caller es admin. Lanza si no. Para actions con service-role. */
 export async function requireAdmin(): Promise<{ userId: string }> {
   const current = await getCurrentUserRole()

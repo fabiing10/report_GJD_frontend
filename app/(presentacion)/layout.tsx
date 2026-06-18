@@ -1,7 +1,6 @@
 import { getInformeActivo } from '@/lib/db/queries'
+import { isCurrentUserAdmin } from '@/lib/auth'
 import { PresentacionShell } from '@/components/presentacion/PresentacionShell'
-
-export const revalidate = 60
 
 export default async function PresentacionLayout({
   children,
@@ -17,5 +16,12 @@ export default async function PresentacionLayout({
     )
   }
 
-  return <PresentacionShell informe={informe}>{children}</PresentacionShell>
+  // El rol se resuelve por petición (el reporte ya está detrás de login).
+  const isAdmin = await isCurrentUserAdmin()
+
+  return (
+    <PresentacionShell informe={informe} isAdmin={isAdmin}>
+      {children}
+    </PresentacionShell>
+  )
 }
