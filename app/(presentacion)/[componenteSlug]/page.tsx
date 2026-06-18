@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { getComponente, getInformeActivo } from '@/lib/db/queries'
 import { ProgressRing } from '@/components/presentacion/ProgressRing'
 import { PaginadorPuntos } from '@/components/presentacion/PaginadorPuntos'
-import { PlazoTabs } from '@/components/presentacion/PlazoTabs'
+import { ProyectoCard } from '@/components/presentacion/ProyectoCard'
 
 interface Props {
   params: Promise<{ componenteSlug: string }>
@@ -20,15 +20,7 @@ export default async function ComponentePage({ params }: Props) {
   return (
     <div className="px-6 pt-8 pb-24 max-w-6xl mx-auto">
       {/* Hero: título izquierda — ring derecha */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 40,
-          marginBottom: 40,
-        }}
-      >
-        {/* Izquierda: icono + título + descripción */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 40, marginBottom: 40 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <span
             style={{
@@ -66,8 +58,6 @@ export default async function ComponentePage({ params }: Props) {
             </p>
           )}
         </div>
-
-        {/* Derecha: ring de avance general */}
         <div style={{ flexShrink: 0 }}>
           <ProgressRing
             value={componente.avance_calculado}
@@ -78,14 +68,34 @@ export default async function ComponentePage({ params }: Props) {
         </div>
       </div>
 
-      {/* Actividades agrupadas por plazo en tabs */}
-      <PlazoTabs
-        proyectos={componente.proyectos}
-        componente={{ slug: componente.slug, color_hex: componente.color_hex }}
-      />
+      {/* Proyectos del componente */}
+      <div className="mb-4 flex items-center gap-2.5">
+        <div className="h-5 w-1 rounded-full" style={{ background: componente.color_hex }} />
+        <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Proyectos</h2>
+        <span className="text-xs text-[var(--color-text-muted)]">
+          {componente.proyectos.length}
+        </span>
+      </div>
+
+      {componente.proyectos.length === 0 ? (
+        <p className="text-sm text-[var(--color-text-muted)]">
+          Este componente aún no tiene proyectos.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {componente.proyectos.map((proyecto, i) => (
+            <ProyectoCard
+              key={proyecto.id}
+              proyecto={proyecto}
+              componente={{ slug: componente.slug, color_hex: componente.color_hex }}
+              index={i}
+            />
+          ))}
+        </div>
+      )}
 
       {informe && (
-        <div className="flex justify-center mt-10">
+        <div className="mt-10 flex justify-center">
           <PaginadorPuntos
             total={informe.componentes.length}
             current={componenteIndex}
