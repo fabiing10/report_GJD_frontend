@@ -27,10 +27,10 @@ const comp = (slug: string, nombre: string): ComponenteConProyectos => ({
 })
 
 describe('NavTree', () => {
-  it('renderiza Inicio, Línea de Tiempo y los componentes', () => {
+  it('renderiza Inicio, Cronograma y los componentes', () => {
     render(<NavTree componentes={[comp('gestion', 'Gestión')]} />)
     expect(screen.getByText('Inicio')).toBeInTheDocument()
-    expect(screen.getByText('Línea de Tiempo')).toBeInTheDocument()
+    expect(screen.getByText('Cronograma')).toBeInTheDocument()
     expect(screen.getByText('Gestión')).toBeInTheDocument()
   })
 

@@ -25,7 +25,7 @@ export function NavTree({ componentes }: NavTreeProps) {
         href="/linea-tiempo"
         active={pathname === '/linea-tiempo'}
         icon={<GitBranch size={14} />}
-        label="Línea de Tiempo"
+        label="Cronograma"
         accent="#93c5fd"
       />
 

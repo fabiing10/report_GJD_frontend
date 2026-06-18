@@ -1,10 +1,10 @@
 import { getInformeActivo } from '@/lib/db/queries'
-import { TimelineSVG } from '@/components/presentacion/TimelineSVG'
+import { GanttCronograma } from '@/components/presentacion/GanttCronograma'
 import { PresentacionShell } from '@/components/presentacion/PresentacionShell'
 
 export const revalidate = 60
 
-export default async function LineaTiempoPage() {
+export default async function CronogramaPage() {
   const informe = await getInformeActivo()
   if (!informe) {
     return (
@@ -16,18 +16,16 @@ export default async function LineaTiempoPage() {
 
   return (
     <PresentacionShell informe={informe}>
-      <div className="px-4 pt-6 pb-24 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-display font-bold text-[var(--color-text-primary)] mb-2">
-          Línea de Tiempo
+      <div className="px-4 pt-6 pb-24">
+        <h1 className="mb-2 font-display text-2xl font-bold text-[var(--color-text-primary)]">
+          Cronograma
         </h1>
-        <p className="text-sm text-[var(--color-text-muted)] mb-8">
-          Distribución de proyectos por horizonte temporal. El radio de cada
-          punto representa el avance.
+        <p className="mb-6 text-sm text-[var(--color-text-muted)]">
+          Proyectos por componente proyectados de Enero 2026 a Diciembre 2027. Cada barra
+          va según las fechas del proyecto o el rango de plazos de sus objetivos; el relleno
+          indica el avance. Toca una barra para abrir el proyecto.
         </p>
-        <TimelineSVG
-          componentes={informe.componentes}
-          fechaCorte={informe.fecha_corte}
-        />
+        <GanttCronograma componentes={informe.componentes} />
       </div>
     </PresentacionShell>
   )
