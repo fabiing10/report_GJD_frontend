@@ -34,9 +34,11 @@ describe('NavTree', () => {
     expect(screen.getByText('Gestión')).toBeInTheDocument()
   })
 
-  it('auto-expande el componente y proyecto de la ruta actual', () => {
+  it('es plano: muestra el componente con su % pero NO sus proyectos', () => {
     render(<NavTree componentes={[comp('gestion', 'Gestión')]} />)
-    // pathname /gestion/hu-1 → proyecto HU-1 visible
-    expect(screen.getByText('HU-1')).toBeInTheDocument()
+    expect(screen.getByText('Gestión')).toBeInTheDocument()
+    expect(screen.getByText('60%')).toBeInTheDocument()
+    // sin desplegables: el proyecto HU-1 no aparece en el menú
+    expect(screen.queryByText('HU-1')).toBeNull()
   })
 })
