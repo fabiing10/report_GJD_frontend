@@ -7,10 +7,44 @@ import type { ComponenteConProyectos } from '@/types/domain'
 
 interface NavTreeProps {
   componentes: ComponenteConProyectos[]
+  collapsed?: boolean
 }
 
-export function NavTree({ componentes }: NavTreeProps) {
+export function NavTree({ componentes, collapsed = false }: NavTreeProps) {
   const pathname = usePathname() ?? '/'
+
+  if (collapsed) {
+    return (
+      <nav className="flex-1 overflow-y-auto px-2 py-2.5">
+        <IconLink href="/" active={pathname === '/'} title="Inicio" accent="var(--color-alcaldia-naranja)">
+          <Home size={16} />
+        </IconLink>
+        <IconLink href="/linea-tiempo" active={pathname === '/linea-tiempo'} title="Cronograma" accent="#93c5fd">
+          <GitBranch size={16} />
+        </IconLink>
+        <div className="my-2 h-px bg-[var(--color-surface-border)]" />
+        <ul className="space-y-1">
+          {componentes.map((c) => {
+            const base = `/${c.slug}`
+            const active = pathname === base || pathname.startsWith(base + '/')
+            return (
+              <li key={c.id}>
+                <Link
+                  href={base}
+                  title={`${c.nombre} · ${Math.round(c.avance_calculado)}%`}
+                  aria-label={c.nombre}
+                  className="flex items-center justify-center rounded-lg py-2 text-lg"
+                  style={{ background: active ? `${c.color_hex}22` : 'transparent' }}
+                >
+                  <span aria-hidden>{c.icono}</span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
+    )
+  }
 
   return (
     <nav className="flex-1 overflow-y-auto px-2 py-2.5 text-[var(--color-text-secondary)]">
@@ -83,6 +117,35 @@ export function NavTree({ componentes }: NavTreeProps) {
         })}
       </ul>
     </nav>
+  )
+}
+
+function IconLink({
+  href,
+  active,
+  title,
+  accent,
+  children,
+}: {
+  href: string
+  active: boolean
+  title: string
+  accent: string
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      title={title}
+      aria-label={title}
+      className="mb-1 flex items-center justify-center rounded-lg py-2 transition-colors"
+      style={{
+        background: active ? `${accent}22` : 'transparent',
+        color: active ? accent : 'var(--color-text-muted)',
+      }}
+    >
+      {children}
+    </Link>
   )
 }
 

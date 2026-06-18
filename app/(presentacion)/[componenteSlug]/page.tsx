@@ -19,8 +19,14 @@ export default async function ComponentePage({ params }: Props) {
 
   return (
     <div className="px-6 pt-8 pb-24 max-w-6xl mx-auto">
-      {/* Hero: título izquierda — ring derecha */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 40, marginBottom: 40 }}>
+      {/* Hero: título izquierda — ring derecha, dentro de un contenedor */}
+      <div
+        className="mb-8 flex items-center gap-10 rounded-2xl border p-6 sm:p-8"
+        style={{
+          background: `linear-gradient(180deg, ${componente.color_hex}12, var(--color-surface-card))`,
+          borderColor: 'var(--color-surface-border)',
+        }}
+      >
         <div style={{ flex: 1, minWidth: 0 }}>
           <span
             style={{

@@ -11,7 +11,8 @@ import { ModoPresentacionBar } from './ModoPresentacionBar'
 import { useModoPresentacion } from './ModoPresentacionProvider'
 import type { InformeConRelaciones } from '@/types/domain'
 
-const SIDEBAR_WIDTH = 264
+const SIDEBAR_EXPANDED = 264
+const SIDEBAR_COLLAPSED = 64
 
 interface PresentacionShellProps {
   informe: InformeConRelaciones
@@ -23,22 +24,23 @@ export function PresentacionShell({ informe, isAdmin, children }: PresentacionSh
   const pathname = usePathname()
   const { isActive, activar, setSlides, setCurrentSlideIndex } = useModoPresentacion()
 
-  const [hidden, setHidden] = useState(false)
+  // Menú colapsado (icon-rail) por defecto; recuerda si el usuario lo expandió.
+  const [collapsed, setCollapsed] = useState(true)
 
   useEffect(() => {
-    const saved = localStorage.getItem('gjd-sidebar-hidden')
-    if (saved === 'true') setHidden(true)
+    const saved = localStorage.getItem('gjd-sidebar-collapsed')
+    if (saved === 'false') setCollapsed(false)
   }, [])
 
   const toggleSidebar = () => {
-    setHidden((prev) => {
+    setCollapsed((prev) => {
       const next = !prev
-      localStorage.setItem('gjd-sidebar-hidden', String(next))
+      localStorage.setItem('gjd-sidebar-collapsed', String(next))
       return next
     })
   }
 
-  const sidebarWidth = hidden ? 0 : SIDEBAR_WIDTH
+  const sidebarWidth = isActive ? 0 : collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_EXPANDED
 
   useEffect(() => {
     const slides = [
@@ -47,7 +49,7 @@ export function PresentacionShell({ informe, isAdmin, children }: PresentacionSh
         { href: `/${c.slug}`, title: c.nombre },
         ...c.proyectos.map((p) => ({ href: `/${c.slug}/${p.slug}`, title: p.nombre })),
       ]),
-      { href: '/linea-tiempo', title: 'Línea de Tiempo' },
+      { href: '/linea-tiempo', title: 'Cronograma' },
     ]
     setSlides(slides)
   }, [informe, setSlides])
@@ -60,7 +62,7 @@ export function PresentacionShell({ informe, isAdmin, children }: PresentacionSh
         { href: `/${c.slug}`, title: c.nombre },
         ...c.proyectos.map((p) => ({ href: `/${c.slug}/${p.slug}`, title: p.nombre })),
       ]),
-      { href: '/linea-tiempo', title: 'Línea de Tiempo' },
+      { href: '/linea-tiempo', title: 'Cronograma' },
     ]
     const idx = slides.findIndex((s) => s.href === pathname)
     if (idx !== -1) setCurrentSlideIndex(idx)
@@ -70,55 +72,58 @@ export function PresentacionShell({ informe, isAdmin, children }: PresentacionSh
     <div className="relative min-h-screen">
       <EstrellasFondo />
 
-      {!isActive && !hidden && (
+      {!isActive && (
         <aside
-          className="fixed inset-y-0 left-0 z-30 flex flex-col"
+          className="fixed inset-y-0 left-0 z-30 flex flex-col transition-[width] duration-200"
           style={{
-            width: SIDEBAR_WIDTH,
+            width: sidebarWidth,
             background: 'rgba(8,14,30,0.97)',
             borderRight: '1px solid var(--color-surface-border)',
             backdropFilter: 'blur(20px)',
+            overflow: 'hidden',
           }}
         >
-          <div className="flex items-center justify-between border-b border-[var(--color-surface-border)] px-4 py-3.5">
-            <div>
-              <p className="text-[13px] font-bold leading-none tracking-wide text-[var(--color-alcaldia-naranja)]">
-                GJD
-              </p>
-              <p className="mt-1 text-[10px] leading-tight text-[var(--color-text-muted)]">
-                Gestión Jurídica Digital
-              </p>
+          {collapsed ? (
+            <div className="flex items-center justify-center border-b border-[var(--color-surface-border)] py-3.5">
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                aria-label="Expandir menú"
+                title="Expandir menú"
+                className="rounded-md p-1.5 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-secondary)]"
+              >
+                <PanelLeftOpen size={16} />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label="Ocultar menú"
-              title="Ocultar menú"
-              className="rounded-md p-1.5 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-secondary)]"
-            >
-              <PanelLeftClose size={16} />
-            </button>
-          </div>
-          <PanelGestionLink isAdmin={isAdmin} />
-          <NavTree componentes={informe.componentes} />
+          ) : (
+            <div className="flex items-center justify-between border-b border-[var(--color-surface-border)] px-4 py-3.5">
+              <div>
+                <p className="text-[13px] font-bold leading-none tracking-wide text-[var(--color-alcaldia-naranja)]">
+                  GJD
+                </p>
+                <p className="mt-1 text-[10px] leading-tight text-[var(--color-text-muted)]">
+                  Gestión Jurídica Digital
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                aria-label="Colapsar menú"
+                title="Colapsar menú"
+                className="rounded-md p-1.5 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-secondary)]"
+              >
+                <PanelLeftClose size={16} />
+              </button>
+            </div>
+          )}
+          <PanelGestionLink isAdmin={isAdmin} collapsed={collapsed} />
+          <NavTree componentes={informe.componentes} collapsed={collapsed} />
         </aside>
-      )}
-
-      {!isActive && hidden && (
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          aria-label="Mostrar menú"
-          title="Mostrar menú"
-          className="fixed left-3 top-3 z-40 rounded-md border border-[var(--color-surface-border)] bg-[rgba(8,14,30,0.9)] p-2 text-[var(--color-text-muted)] backdrop-blur transition-colors hover:text-[var(--color-text-secondary)]"
-        >
-          <PanelLeftOpen size={16} />
-        </button>
       )}
 
       <main
         className="relative z-10 pb-24 transition-all duration-200"
-        style={{ paddingLeft: isActive ? 0 : sidebarWidth }}
+        style={{ paddingLeft: sidebarWidth }}
       >
         {children}
       </main>
