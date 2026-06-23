@@ -174,6 +174,7 @@ function ObjetivoRow({
   const [plazo, setPlazo] = useState<PlazoEnum>(objetivo.plazo)
   const [estado, setEstado] = useState<ObjetivoEstadoEnum>(objetivo.estado)
   const [peso, setPeso] = useState(String(objetivo.peso))
+  const [fechaLimite, setFechaLimite] = useState(objetivo.fecha_limite ?? '')
   const [loading, setLoading] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: objetivo.id })
@@ -185,7 +186,8 @@ function ObjetivoRow({
     tipo !== objetivo.tipo ||
     plazo !== objetivo.plazo ||
     estado !== objetivo.estado ||
-    Number(peso) !== objetivo.peso
+    Number(peso) !== objetivo.peso ||
+    (fechaLimite || null) !== objetivo.fecha_limite
 
   async function handleSave() {
     setLoading(true)
@@ -198,6 +200,7 @@ function ObjetivoRow({
         plazo,
         estado,
         peso: Number(peso),
+        fecha_limite: fechaLimite || null,
       }
       await actualizarObjetivo(objetivo.id, input)
       toast.success('Objetivo actualizado')
@@ -287,6 +290,18 @@ function ObjetivoRow({
             className="h-7 w-16 tabular-nums"
           />
         </div>
+        <div className="flex items-center gap-1">
+          <Label htmlFor={`fecha-${objetivo.id}`} className="text-[11px] text-[var(--color-text-muted)]">
+            Fecha límite
+          </Label>
+          <Input
+            id={`fecha-${objetivo.id}`}
+            type="date"
+            value={fechaLimite}
+            onChange={(e) => setFechaLimite(e.target.value)}
+            className="h-7 w-36 tabular-nums"
+          />
+        </div>
         <Button
           size="sm"
           className="text-xs"
@@ -350,6 +365,7 @@ function ObjetivoFormDialog({
       plazo: plazoSel,
       estado,
       peso: pesoRaw === '' ? 1 : Number(pesoRaw),
+      fecha_limite: String(fd.get('fecha_limite') ?? '').trim() || null,
     }
 
     setLoading(true)
@@ -437,6 +453,10 @@ function ObjetivoFormDialog({
             <div className="space-y-1">
               <Label htmlFor="peso">Peso</Label>
               <Input id="peso" name="peso" type="number" min={0} max={1000} defaultValue={1} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="fecha_limite">Fecha límite (opcional)</Label>
+              <Input id="fecha_limite" name="fecha_limite" type="date" />
             </div>
           </div>
 

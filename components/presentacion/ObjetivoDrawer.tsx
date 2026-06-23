@@ -1,8 +1,16 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { X, Users, CheckSquare, Search, FileText } from 'lucide-react'
+import { X, Users, CheckSquare, Search, FileText, Calendar } from 'lucide-react'
 import type { ObjetivoDetalle, ActividadTipoEnum } from '@/types/domain'
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+function fmtFecha(f: string | null): string | null {
+  if (!f) return null
+  const [y, m, d] = f.split('-')
+  if (!y || !m || !d) return f
+  return `${Number(d)} ${MESES[Number(m) - 1]} ${y}`
+}
 
 const TIPO_LABEL = { hu: 'HU', funcionalidad: 'Funcionalidad' } as const
 const ESTADO_LABEL = {
@@ -75,6 +83,12 @@ export function ObjetivoDrawer({
               <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
                 {PLAZO_LABEL[obj.plazo]}
               </span>
+              {fmtFecha(obj.fecha_limite) && (
+                <span className="inline-flex items-center gap-1 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] tabular-nums text-[var(--color-text-muted)]">
+                  <Calendar size={10} />
+                  {fmtFecha(obj.fecha_limite)}
+                </span>
+              )}
             </div>
             <h2 className="text-sm font-semibold leading-snug text-[var(--color-text-primary)]">
               {obj.titulo}

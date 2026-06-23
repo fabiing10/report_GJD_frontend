@@ -171,6 +171,7 @@ export async function duplicarInforme(id: string) {
       plazo: o.plazo,
       estado: o.estado,
       peso: o.peso,
+      fecha_limite: o.fecha_limite,
       orden: o.orden,
     }))
     const { error } = await supabase.from('objetivos').insert(payload)

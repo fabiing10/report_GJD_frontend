@@ -78,6 +78,7 @@ export interface Objetivo {
   plazo: PlazoEnum
   estado: ObjetivoEstadoEnum
   peso: number
+  fecha_limite: string | null
   orden: number
   created_at: string
   updated_at: string

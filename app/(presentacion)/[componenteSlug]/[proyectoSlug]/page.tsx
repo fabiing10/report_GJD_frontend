@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation'
 import { getComponente } from '@/lib/db/queries'
+import { isCurrentUserAdmin } from '@/lib/auth'
 import { ProgressRing } from '@/components/presentacion/ProgressRing'
 import { EstadoBadge } from '@/components/presentacion/EstadoBadge'
 import { Breadcrumbs } from '@/components/presentacion/Breadcrumbs'
 import { NavegacionProyectos } from '@/components/presentacion/NavegacionProyectos'
 import { RecursoVisual } from '@/components/presentacion/RecursoVisual'
 import { PaginadorPuntos } from '@/components/presentacion/PaginadorPuntos'
-import { ObjetivosPorPlazoReporte } from '@/components/presentacion/ObjetivosPorPlazoReporte'
+import { ObjetivosKanban } from '@/components/presentacion/ObjetivosKanban'
 import { ObjetivoDrawer } from '@/components/presentacion/ObjetivoDrawer'
 
 interface Props {
@@ -27,6 +28,8 @@ export default async function ProyectoPage({ params }: Props) {
     proyectoIndex < componente.proyectos.length - 1
       ? componente.proyectos[proyectoIndex + 1]!
       : null
+
+  const isAdmin = await isCurrentUserAdmin()
 
   return (
     <div className="px-4 pt-4 pb-24 max-w-5xl mx-auto">
@@ -76,10 +79,14 @@ export default async function ProyectoPage({ params }: Props) {
             Objetivos
           </h2>
           <span className="text-xs text-[var(--color-text-muted)]">
-            {proyecto.objetivos.length} · toca uno para ver su detalle y bitácora
+            {proyecto.objetivos.length} · {isAdmin ? 'arrastra entre columnas para cambiar el plazo · ' : ''}toca uno para ver su detalle
           </span>
         </div>
-        <ObjetivosPorPlazoReporte objetivos={proyecto.objetivos} colorHex={componente.color_hex} />
+        <ObjetivosKanban
+          objetivos={proyecto.objetivos}
+          colorHex={componente.color_hex}
+          isAdmin={isAdmin}
+        />
       </section>
 
       <RecursoVisual recursos={proyecto.recursos} />

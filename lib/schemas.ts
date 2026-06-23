@@ -54,6 +54,7 @@ export const objetivoSchema = z.object({
   plazo: PLAZO,
   estado: OBJETIVO_ESTADO,
   peso: z.number().min(0).max(1000),
+  fecha_limite: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
 })
 
 export const recursoSchema = z.object({

@@ -29,7 +29,30 @@ describe('actions objetivos', () => {
     await crearObjetivo(base)
     expect(ops.table).toBe('objetivos')
     expect((ops.payload as { orden: number }).orden).toBe(3)
+    // fecha_limite es opcional: ausente → null
+    expect((ops.payload as { fecha_limite: string | null }).fecha_limite).toBeNull()
     expect(revalidatePath).toHaveBeenCalled()
+  })
+
+  it('crearObjetivo conserva fecha_limite cuando se provee', async () => {
+    const { crearObjetivo } = await import('./objetivos')
+    await crearObjetivo({ ...base, fecha_limite: '2027-12-15' })
+    expect((ops.payload as { fecha_limite: string | null }).fecha_limite).toBe('2027-12-15')
+  })
+
+  it('cambiarPlazoObjetivo actualiza solo el plazo (validado)', async () => {
+    const { cambiarPlazoObjetivo } = await import('./objetivos')
+    await cambiarPlazoObjetivo('obj-1', 'mediano')
+    expect(ops.table).toBe('objetivos')
+    expect(ops.method).toBe('update')
+    expect(ops.payload).toEqual({ plazo: 'mediano' })
+    expect(revalidatePath).toHaveBeenCalled()
+  })
+
+  it('cambiarPlazoObjetivo rechaza plazo inválido (Zod)', async () => {
+    const { cambiarPlazoObjetivo } = await import('./objetivos')
+    // @ts-expect-error plazo inválido a propósito
+    await expect(cambiarPlazoObjetivo('obj-1', 'xxx')).rejects.toThrow()
   })
 
   it('crearObjetivo rechaza tipo inválido (Zod)', async () => {
