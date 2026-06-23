@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
+import { Open_Sans } from 'next/font/google'
 import './globals.css'
+
+const openSans = Open_Sans({
+  subsets: ['latin'],
+  variable: '--font-open-sans',
+  display: 'swap',
+})
 import { Toaster } from 'sonner'
 import { ModoPresentacionProvider } from '@/components/presentacion/ModoPresentacionProvider'
 
@@ -16,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="es" className={openSans.variable}>
       <body className="bg-[#0A1228] text-[#F8FAFC] antialiased min-h-screen font-sans">
         <ModoPresentacionProvider>{children}</ModoPresentacionProvider>
         <Toaster theme="dark" position="top-right" richColors />
