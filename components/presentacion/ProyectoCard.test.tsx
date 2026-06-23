@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { ProyectoCard } from './ProyectoCard'
 import type { ProyectoDetalle } from '@/types/domain'
 
@@ -44,5 +44,23 @@ describe('ProyectoCard', () => {
       screen.getByText('HU-1 Gestión de Notificaciones')
     ).toBeInTheDocument()
     expect(screen.getByText('Flujo automatizado')).toBeInTheDocument()
+  })
+
+  it('modo selección: actúa como botón, dispara onSelect y refleja active', () => {
+    const onSelect = vi.fn()
+    render(
+      <ProyectoCard
+        proyecto={mockProyecto}
+        componente={{ slug: 'gestion-notificaciones', color_hex: '#3B82F6' }}
+        onSelect={onSelect}
+        active
+      />
+    )
+    const btn = screen.getByRole('button', { name: /HU-1 Gestión de Notificaciones/ })
+    expect(btn).toHaveAttribute('aria-pressed', 'true')
+    // no debe ser un enlace de navegación en modo selección
+    expect(screen.queryByRole('link')).toBeNull()
+    fireEvent.click(btn)
+    expect(onSelect).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,4 +1,4 @@
-import type { ProyectoDetalle, PlazoEnum } from '@/types/domain'
+import type { ProyectoDetalle, PlazoEnum, Objetivo } from '@/types/domain'
 
 // Ventana del cronograma: Enero 2026 → Diciembre 2027 (24 meses).
 export const START_YEAR = 2026
@@ -66,4 +66,12 @@ export function proyectoSpan(p: ProyectoDetalle): { start: number; end: number }
 export function plazosDelProyecto(p: ProyectoDetalle): PlazoEnum[] {
   const set = new Set(p.objetivos.map((o) => o.plazo))
   return (['corto', 'mediano', 'largo'] as PlazoEnum[]).filter((pl) => set.has(pl))
+}
+
+/**
+ * Span de un objetivo en el cronograma: ocupa todo el rango de meses de su
+ * plazo. Cada objetivo es trazable en la línea de tiempo según su plazo definido.
+ */
+export function objetivoSpan(o: Pick<Objetivo, 'plazo'>): { start: number; end: number } {
+  return PLAZO_RANGE[o.plazo]
 }

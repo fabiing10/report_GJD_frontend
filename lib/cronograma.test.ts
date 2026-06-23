@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildMeses, proyectoSpan, PLAZO_RANGE, TOTAL_MESES } from './cronograma'
+import { buildMeses, proyectoSpan, objetivoSpan, PLAZO_RANGE, TOTAL_MESES } from './cronograma'
 import type { ProyectoDetalle, Objetivo } from '@/types/domain'
 
 const obj = (plazo: Objetivo['plazo']): Objetivo => ({
@@ -42,5 +42,11 @@ describe('cronograma', () => {
 
   it('sin fechas ni objetivos → null', () => {
     expect(proyectoSpan(proy({}))).toBeNull()
+  })
+
+  it('objetivoSpan ocupa el rango de meses de su plazo', () => {
+    expect(objetivoSpan({ plazo: 'corto' })).toEqual({ start: 0, end: 5 })
+    expect(objetivoSpan({ plazo: 'mediano' })).toEqual({ start: 6, end: 11 })
+    expect(objetivoSpan({ plazo: 'largo' })).toEqual({ start: 12, end: 23 })
   })
 })
