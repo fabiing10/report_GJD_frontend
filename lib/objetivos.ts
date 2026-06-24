@@ -29,13 +29,11 @@ export function objetivosPorPlazo<T extends Objetivo>(
   return objetivos.filter((o) => o.plazo === plazo)
 }
 
-/** Avance ponderado de un plazo: Σ peso[cumplido] / Σ peso × 100. */
+/** Avance ponderado de un plazo: Σ(peso × avance) / Σ peso (usa el % de cada producto). */
 export function avancePlazo(objetivos: Objetivo[], plazo: PlazoEnum): number {
   const items = objetivosPorPlazo(objetivos, plazo)
   const total = items.reduce((s, o) => s + o.peso, 0)
   if (total === 0) return 0
-  const cumplido = items
-    .filter(esLogro)
-    .reduce((s, o) => s + o.peso, 0)
-  return (cumplido / total) * 100
+  const ponderado = items.reduce((s, o) => s + o.peso * o.avance, 0)
+  return ponderado / total
 }

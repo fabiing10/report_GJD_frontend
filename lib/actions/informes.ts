@@ -171,6 +171,8 @@ export async function duplicarInforme(id: string) {
       plazo: o.plazo,
       estado: o.estado,
       peso: o.peso,
+      avance: o.avance,
+      fecha_inicio: o.fecha_inicio,
       fecha_limite: o.fecha_limite,
       orden: o.orden,
     }))
