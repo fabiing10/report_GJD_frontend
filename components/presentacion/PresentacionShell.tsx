@@ -6,6 +6,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { EstrellasFondo } from './EstrellasFondo'
 import { NavTree } from './NavTree'
 import { PanelGestionLink } from './PanelGestionLink'
+import { LogoutButton } from '@/components/auth/LogoutButton'
 import { Footer } from './Footer'
 import { ModoPresentacionBar } from './ModoPresentacionBar'
 import { useModoPresentacion } from './ModoPresentacionProvider'
@@ -118,6 +119,16 @@ export function PresentacionShell({ informe, isAdmin, children }: PresentacionSh
           )}
           <PanelGestionLink isAdmin={isAdmin} collapsed={collapsed} />
           <NavTree componentes={informe.componentes} collapsed={collapsed} />
+          <div className="mt-auto border-t border-[var(--color-surface-border)] py-1">
+            {collapsed ? (
+              <LogoutButton collapsed label="Cerrar sesión" />
+            ) : (
+              <LogoutButton
+                label="Cerrar sesión"
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-[11px] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text-primary)]"
+              />
+            )}
+          </div>
         </aside>
       )}
 

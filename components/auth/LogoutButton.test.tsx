@@ -15,4 +15,18 @@ describe('LogoutButton', () => {
     await vi.waitFor(() => expect(signOut).toHaveBeenCalled())
     expect(push).toHaveBeenCalledWith('/login')
   })
+
+  it('usa el label provisto (p. ej. "Cerrar sesión")', () => {
+    render(<LogoutButton label="Cerrar sesión" />)
+    expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeInTheDocument()
+  })
+
+  it('modo collapsed: solo ícono con tooltip, sigue cerrando sesión', async () => {
+    render(<LogoutButton collapsed label="Cerrar sesión" />)
+    const btn = screen.getByRole('button', { name: /cerrar sesión/i })
+    // icon-rail: sin texto visible
+    expect(btn).toHaveTextContent('')
+    fireEvent.click(btn)
+    await vi.waitFor(() => expect(signOut).toHaveBeenCalled())
+  })
 })
