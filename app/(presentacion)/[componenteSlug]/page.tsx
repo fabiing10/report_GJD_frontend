@@ -18,7 +18,7 @@ export default async function ComponentePage({ params }: Props) {
     informe?.componentes.findIndex((c) => c.slug === componenteSlug) ?? 0
 
   return (
-    <div className="px-6 pt-8 pb-24 max-w-6xl mx-auto">
+    <div className="px-6 pt-8 pb-24 mx-auto w-[90%] max-w-[1800px]">
       {/* Hero: ícono a la izquierda + título/descripción — ring a la derecha */}
       <div
         className="mb-8 flex items-center gap-5 rounded-2xl border p-5 sm:gap-6 sm:p-6"
