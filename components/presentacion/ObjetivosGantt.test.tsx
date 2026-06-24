@@ -14,18 +14,18 @@ const obj = (
   id: string,
   plazo: ObjetivoDetalle['plazo'],
   estado: ObjetivoDetalle['estado'],
+  avance = 0,
   fecha_limite: string | null = null
 ): ObjetivoDetalle => ({
   id, proyecto_id: 'p1', titulo: id, descripcion: null, tipo: 'hu', plazo, estado,
-  peso: 1, fecha_limite, orden: 0, created_at: '', updated_at: '', actividades: [],
+  peso: 1, avance, fecha_inicio: null, fecha_limite, orden: 0, created_at: '', updated_at: '', actividades: [],
 })
 
 describe('ObjetivosGantt', () => {
   it('lista una fila por objetivo con cabeceras de cronograma (años + plazos)', () => {
     render(
       <ObjetivosGantt
-        objetivos={[obj('OBJ-A', 'corto', 'cumplido'), obj('OBJ-B', 'largo', 'pendiente')]}
-        colorHex="#3B82F6"
+        objetivos={[obj('OBJ-A', 'corto', 'cumplido', 100), obj('OBJ-B', 'largo', 'pendiente', 0)]}
       />
     )
     expect(screen.getByText('2026')).toBeInTheDocument()
@@ -33,7 +33,7 @@ describe('ObjetivosGantt', () => {
     // los productos aparecen en la columna de etiqueta
     expect(screen.getAllByText('OBJ-A').length).toBeGreaterThan(0)
     expect(screen.getAllByText('OBJ-B').length).toBeGreaterThan(0)
-    // la barra muestra el % de avance (cumplido → 100%, pendiente → 0%)
+    // la barra muestra el % de avance manual del producto (100 y 0)
     expect(screen.getByText('100%')).toBeInTheDocument()
     expect(screen.getByText('0%')).toBeInTheDocument()
     // encabezado de columna renombrado a "Producto"
@@ -41,13 +41,13 @@ describe('ObjetivosGantt', () => {
   })
 
   it('clic en la barra de un objetivo navega al modal de detalle (?obj)', () => {
-    render(<ObjetivosGantt objetivos={[obj('OBJ-A', 'corto', 'cumplido')]} colorHex="#3B82F6" />)
+    render(<ObjetivosGantt objetivos={[obj('OBJ-A', 'corto', 'cumplido')]} />)
     fireEvent.click(screen.getByRole('button', { name: /OBJ-A/ }))
     expect(push).toHaveBeenCalledWith('/visor360?obj=OBJ-A', { scroll: false })
   })
 
   it('proyecto sin objetivos muestra mensaje vacío', () => {
-    render(<ObjetivosGantt objetivos={[]} colorHex="#3B82F6" />)
+    render(<ObjetivosGantt objetivos={[]} />)
     expect(screen.getByText(/aún no tiene productos para trazar/i)).toBeInTheDocument()
   })
 })

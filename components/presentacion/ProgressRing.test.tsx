@@ -3,9 +3,11 @@ import { render, screen } from '@testing-library/react'
 import { ProgressRing } from './ProgressRing'
 
 describe('ProgressRing', () => {
-  it('renderiza el porcentaje redondeado', () => {
+  it('renderiza el porcentaje redondeado, en blanco (no el color del anillo)', () => {
     render(<ProgressRing value={73.4} color="#3B82F6" />)
-    expect(screen.getByText('73%')).toBeInTheDocument()
+    const num = screen.getByText('73%')
+    expect(num).toBeInTheDocument()
+    expect(num).toHaveStyle({ color: 'var(--color-text-primary)' })
   })
 
   it('renderiza con label opcional', () => {

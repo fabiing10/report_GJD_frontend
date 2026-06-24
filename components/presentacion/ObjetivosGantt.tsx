@@ -5,15 +5,15 @@ import type { ObjetivoDetalle, PlazoEnum, ObjetivoEstadoEnum } from '@/types/dom
 import {
   buildMeses,
   mesAbbr,
-  objetivoSpan,
   dateToIndex,
   PLAZO_RANGE,
   TOTAL_MESES,
 } from '@/lib/cronograma'
 
-const LABEL_W = 240
+const LABEL_W = 300
 const MONTH_W = 40
-const ROW_H = 38
+const ROW_H = 46
+const BAR_H = 28
 
 const PLAZO_LABEL: Record<PlazoEnum, string> = {
   corto: 'Corto',
@@ -22,20 +22,15 @@ const PLAZO_LABEL: Record<PlazoEnum, string> = {
 }
 const PLAZO_ORDEN: Record<PlazoEnum, number> = { corto: 0, mediano: 1, largo: 2 }
 
-const ESTADO: Record<ObjetivoEstadoEnum, { label: string; color: string; fill: number }> = {
-  pendiente: { label: 'Pendiente', color: 'var(--color-estado-no-iniciado)', fill: 0 },
-  en_progreso: { label: 'En progreso', color: 'var(--color-estado-en-progreso)', fill: 50 },
-  cumplido: { label: 'Cumplido', color: 'var(--color-estado-completado)', fill: 100 },
+// Colores hex (no CSS vars) para poder componer alpha sobre la barra.
+const ESTADO: Record<ObjetivoEstadoEnum, { label: string; color: string }> = {
+  pendiente: { label: 'Pendiente', color: '#64748B' },
+  en_progreso: { label: 'En progreso', color: '#3B82F6' },
+  cumplido: { label: 'Cumplido', color: '#22C55E' },
 }
 const TIPO_LABEL = { hu: 'HU', funcionalidad: 'Func.' } as const
 
-export function ObjetivosGantt({
-  objetivos,
-  colorHex,
-}: {
-  objetivos: ObjetivoDetalle[]
-  colorHex: string
-}) {
+export function ObjetivosGantt({ objetivos }: { objetivos: ObjetivoDetalle[] }) {
   const router = useRouter()
   const pathname = usePathname() ?? '/'
   const meses = buildMeses()
@@ -120,9 +115,14 @@ export function ObjetivosGantt({
 
         {/* Cuerpo: una fila por objetivo */}
         {filas.map((o) => {
-          const span = objetivoSpan(o)
           const est = ESTADO[o.estado]
-          const marker = o.fecha_limite ? dateToIndex(o.fecha_limite) : null
+          // Span proyectado desde fechas: inicio = fecha_inicio (o inicio del plazo);
+          // fin = fecha_limite (o fin del plazo). El relleno = % de avance del producto.
+          const plazoR = PLAZO_RANGE[o.plazo]
+          const fi = o.fecha_inicio ? dateToIndex(o.fecha_inicio) : null
+          const fl = o.fecha_limite ? dateToIndex(o.fecha_limite) : null
+          const start = fi !== null ? fi : plazoR.start
+          const end = Math.max(fl !== null ? fl : plazoR.end, start)
           return (
             <div
               key={o.id}
@@ -131,17 +131,17 @@ export function ObjetivosGantt({
             >
               <div
                 style={{ width: LABEL_W }}
-                className="flex shrink-0 items-center gap-2 px-4 text-[11px]"
+                className="flex shrink-0 items-center gap-2.5 px-4 text-[13px]"
               >
                 <span
-                  className="size-2 shrink-0 rounded-full"
+                  className="size-2.5 shrink-0 rounded-full"
                   style={{ background: est.color }}
                   aria-hidden
                 />
-                <span className="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]">
+                <span className="min-w-0 flex-1 truncate font-medium text-[var(--color-text-secondary)]">
                   {o.titulo}
                 </span>
-                <span className="shrink-0 rounded bg-white/[0.06] px-1 py-0.5 text-[9px] text-[var(--color-text-muted)]">
+                <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-[var(--color-text-muted)]">
                   {TIPO_LABEL[o.tipo]}
                 </span>
               </div>
@@ -169,49 +169,33 @@ export function ObjetivosGantt({
                   />
                 ))}
 
-                {/* barra del objetivo */}
+                {/* barra del objetivo: track siempre sombreado + relleno de avance */}
                 <button
                   type="button"
                   onClick={() => router.push(`${pathname}?obj=${o.id}`, { scroll: false })}
-                  title={`${o.titulo} · ${PLAZO_LABEL[o.plazo]} plazo · ${est.label}${o.fecha_limite ? ` · meta ${o.fecha_limite}` : ''}`}
-                  aria-label={`${o.titulo} — ${est.label}`}
-                  className="relative my-1.5 self-center overflow-hidden rounded-md transition-transform hover:scale-[1.01]"
+                  title={`${o.titulo} · ${PLAZO_LABEL[o.plazo]} plazo · ${est.label} · ${o.avance}%${o.fecha_inicio ? ` · inicio ${o.fecha_inicio}` : ''}${o.fecha_limite ? ` · meta ${o.fecha_limite}` : ''}`}
+                  aria-label={`${o.titulo} — ${est.label} — ${o.avance}%`}
+                  className="relative my-1.5 self-center overflow-hidden rounded-lg transition-transform hover:scale-[1.01]"
                   style={{
-                    gridColumn: `${span.start + 1} / ${span.end + 2}`,
-                    background: `${est.color}29`,
-                    border: `1px solid ${est.color}66`,
-                    height: ROW_H - 16,
+                    gridColumn: `${start + 1} / ${end + 2}`,
+                    background: `${est.color}40`,
+                    border: `1px solid ${est.color}80`,
+                    height: BAR_H,
                   }}
                 >
-                  {est.fill > 0 && (
+                  {o.avance > 0 && (
                     <span
-                      className="absolute inset-y-0 left-0 rounded-md"
-                      style={{ width: `${est.fill}%`, background: est.color, opacity: 0.8 }}
+                      className="absolute inset-y-0 left-0"
+                      style={{ width: `${o.avance}%`, background: est.color, opacity: 0.95 }}
                     />
                   )}
-                  <span className="relative z-10 block px-2 text-center text-[10px] font-semibold leading-[22px] tabular-nums text-white">
-                    {est.fill}%
+                  <span
+                    className="relative z-10 block px-2 text-center text-[11px] font-semibold tabular-nums text-white"
+                    style={{ lineHeight: `${BAR_H - 2}px` }}
+                  >
+                    {o.avance}%
                   </span>
                 </button>
-
-                {/* marcador de fecha límite */}
-                {marker !== null && (
-                  <span
-                    aria-hidden
-                    className="pointer-events-none self-center"
-                    title={`Fecha límite: ${o.fecha_limite}`}
-                    style={{
-                      gridColumn: `${marker + 1} / ${marker + 2}`,
-                      justifySelf: 'center',
-                      width: 8,
-                      height: 8,
-                      transform: 'rotate(45deg)',
-                      background: colorHex,
-                      border: '1px solid rgba(255,255,255,0.6)',
-                      zIndex: 20,
-                    }}
-                  />
-                )}
               </div>
             </div>
           )

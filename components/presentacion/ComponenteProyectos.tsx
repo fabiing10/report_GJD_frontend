@@ -55,7 +55,7 @@ export function ComponenteProyectos({
             {seleccionado.nombre} · {seleccionado.objetivos.length} productos por plazo
           </span>
         </div>
-        <ObjetivosGantt objetivos={seleccionado.objetivos} colorHex={colorHex} />
+        <ObjetivosGantt objetivos={seleccionado.objetivos} />
       </div>
 
       {/* Modal de detalle del objetivo (abierto desde una barra del cronograma) */}

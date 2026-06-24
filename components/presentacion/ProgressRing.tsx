@@ -69,7 +69,7 @@ export function ProgressRing({
       <div className="absolute flex flex-col items-center justify-center">
         <span
           className={`font-display font-semibold tabular-nums ${fontSize}`}
-          style={{ color }}
+          style={{ color: 'var(--color-text-primary)' }}
         >
           {Math.round(clamped)}%
         </span>
