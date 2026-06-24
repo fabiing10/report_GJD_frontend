@@ -174,6 +174,8 @@ function ObjetivoRow({
   const [plazo, setPlazo] = useState<PlazoEnum>(objetivo.plazo)
   const [estado, setEstado] = useState<ObjetivoEstadoEnum>(objetivo.estado)
   const [peso, setPeso] = useState(String(objetivo.peso))
+  const [avance, setAvance] = useState(String(objetivo.avance))
+  const [fechaInicio, setFechaInicio] = useState(objetivo.fecha_inicio ?? '')
   const [fechaLimite, setFechaLimite] = useState(objetivo.fecha_limite ?? '')
   const [loading, setLoading] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -187,6 +189,8 @@ function ObjetivoRow({
     plazo !== objetivo.plazo ||
     estado !== objetivo.estado ||
     Number(peso) !== objetivo.peso ||
+    Number(avance) !== objetivo.avance ||
+    (fechaInicio || null) !== objetivo.fecha_inicio ||
     (fechaLimite || null) !== objetivo.fecha_limite
 
   async function handleSave() {
@@ -200,6 +204,8 @@ function ObjetivoRow({
         plazo,
         estado,
         peso: Number(peso),
+        avance: Number(avance),
+        fecha_inicio: fechaInicio || null,
         fecha_limite: fechaLimite || null,
       }
       await actualizarObjetivo(objetivo.id, input)
@@ -291,6 +297,32 @@ function ObjetivoRow({
           />
         </div>
         <div className="flex items-center gap-1">
+          <Label htmlFor={`avance-${objetivo.id}`} className="text-[11px] text-[var(--color-text-muted)]">
+            Avance %
+          </Label>
+          <Input
+            id={`avance-${objetivo.id}`}
+            type="number"
+            min={0}
+            max={100}
+            value={avance}
+            onChange={(e) => setAvance(e.target.value)}
+            className="h-7 w-16 tabular-nums"
+          />
+        </div>
+        <div className="flex items-center gap-1">
+          <Label htmlFor={`fecha-inicio-${objetivo.id}`} className="text-[11px] text-[var(--color-text-muted)]">
+            Inicio
+          </Label>
+          <Input
+            id={`fecha-inicio-${objetivo.id}`}
+            type="date"
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+            className="h-7 w-36 tabular-nums"
+          />
+        </div>
+        <div className="flex items-center gap-1">
           <Label htmlFor={`fecha-${objetivo.id}`} className="text-[11px] text-[var(--color-text-muted)]">
             Fecha límite
           </Label>
@@ -365,6 +397,8 @@ function ObjetivoFormDialog({
       plazo: plazoSel,
       estado,
       peso: pesoRaw === '' ? 1 : Number(pesoRaw),
+      avance: Number(String(fd.get('avance') ?? '0').trim() || 0),
+      fecha_inicio: String(fd.get('fecha_inicio') ?? '').trim() || null,
       fecha_limite: String(fd.get('fecha_limite') ?? '').trim() || null,
     }
 
@@ -387,7 +421,7 @@ function ObjetivoFormDialog({
       <DialogTrigger render={<Button variant="outline" size="sm" className="text-xs" />}>
         {triggerLabel}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl sm:p-6">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -453,6 +487,14 @@ function ObjetivoFormDialog({
             <div className="space-y-1">
               <Label htmlFor="peso">Peso</Label>
               <Input id="peso" name="peso" type="number" min={0} max={1000} defaultValue={1} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="avance">Avance %</Label>
+              <Input id="avance" name="avance" type="number" min={0} max={100} defaultValue={0} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="fecha_inicio">Fecha inicio (opcional)</Label>
+              <Input id="fecha_inicio" name="fecha_inicio" type="date" />
             </div>
             <div className="space-y-1">
               <Label htmlFor="fecha_limite">Fecha límite (opcional)</Label>

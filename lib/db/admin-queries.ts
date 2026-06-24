@@ -110,6 +110,35 @@ export async function getAllActividades(): Promise<
   }))
 }
 
+export async function getAllObjetivos(): Promise<
+  Array<Objetivo & { proyecto_nombre: string; componente_nombre: string }>
+> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('objetivos')
+    .select('*, proyectos(nombre, orden, componentes(nombre, orden))')
+    .order('orden')
+  type Row = Objetivo & {
+    proyectos:
+      | { nombre: string; orden: number; componentes: { nombre: string; orden: number } | null }
+      | null
+  }
+  return ((data ?? []) as Row[])
+    .slice()
+    .sort((a, b) => {
+      const ca = a.proyectos?.componentes?.orden ?? 0
+      const cb = b.proyectos?.componentes?.orden ?? 0
+      const pa = a.proyectos?.orden ?? 0
+      const pb = b.proyectos?.orden ?? 0
+      return ca - cb || pa - pb || a.orden - b.orden
+    })
+    .map((o) => ({
+      ...o,
+      proyecto_nombre: o.proyectos?.nombre ?? '',
+      componente_nombre: o.proyectos?.componentes?.nombre ?? '',
+    }))
+}
+
 export async function getAllEjes(): Promise<EjeTransversal[]> {
   const supabase = await createClient()
   const { data } = await supabase

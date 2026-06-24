@@ -220,7 +220,7 @@ function NuevoUsuarioDialog({ onDone }: { onDone: () => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button size="sm" />}>+ Nuevo usuario</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl sm:p-6">
         <DialogHeader>
           <DialogTitle>Nuevo usuario</DialogTitle>
           <DialogDescription>

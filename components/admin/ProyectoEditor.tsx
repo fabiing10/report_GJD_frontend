@@ -178,7 +178,7 @@ function DatosSection({
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field label="Estado" htmlFor="estado" description="Etapa actual del proyecto.">
-            <Select value={estado} onValueChange={(v) => setEstado(v as EstadoEnum)}>
+            <Select value={estado} onValueChange={(v) => setEstado(v as EstadoEnum)} items={ESTADOS}>
               <SelectTrigger id="estado" className="w-full">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>

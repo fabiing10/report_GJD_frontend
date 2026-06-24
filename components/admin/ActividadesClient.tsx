@@ -298,7 +298,7 @@ export function ActividadesClient({
           <DialogTrigger render={<Button size="sm" />}>
             + Nueva actividad
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-2xl sm:p-6">
             <DialogHeader>
               <DialogTitle>Nueva actividad</DialogTitle>
             </DialogHeader>
@@ -444,7 +444,7 @@ export function ActividadesClient({
                         >
                           Editar
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="sm:max-w-2xl sm:p-6">
                           <DialogHeader>
                             <DialogTitle>Editar actividad</DialogTitle>
                           </DialogHeader>

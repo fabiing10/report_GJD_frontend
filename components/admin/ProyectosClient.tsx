@@ -111,7 +111,14 @@ export function ProyectosClient({ grupos }: Props) {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-xs text-[var(--color-text-muted)]">Componente</span>
-          <Select value={filtro} onValueChange={(v) => setFiltro(v ?? 'all')}>
+          <Select
+            value={filtro}
+            onValueChange={(v) => setFiltro(v ?? 'all')}
+            items={[
+              { value: 'all', label: 'Todos' },
+              ...grupos.map((g) => ({ value: g.componente.id, label: `${g.componente.icono} ${g.componente.nombre}` })),
+            ]}
+          >
             <SelectTrigger className="min-w-48">
               <SelectValue placeholder="Todos" />
             </SelectTrigger>
@@ -378,7 +385,7 @@ function ProyectoFormDialog({
         {triggerIcon}
         {triggerLabel}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl sm:p-6">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -438,7 +445,7 @@ function ProyectoFormDialog({
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field label="Estado" htmlFor="estado-trigger" description="Etapa actual del proyecto.">
-              <Select value={estado} onValueChange={(v) => v && setEstado(v as EstadoEnum)}>
+              <Select value={estado} onValueChange={(v) => v && setEstado(v as EstadoEnum)} items={ESTADOS}>
                 <SelectTrigger id="estado-trigger" className="w-full">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>

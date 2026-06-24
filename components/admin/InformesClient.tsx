@@ -272,7 +272,7 @@ function InformeFormDialog({
       >
         {triggerLabel}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl sm:p-6">
         <DialogHeader>
           <DialogTitle>
             {mode === 'create' ? 'Nuevo informe' : 'Editar informe'}
